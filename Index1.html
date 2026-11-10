@@ -4,121 +4,225 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    :root {
+      --bg: #FBF7F0;
+      --surface: #FFFFFF;
+      --surface-2: #FFF9EE;
+      --ink: #2A2118;
+      --ink-2: #5C4E3D;
+      --muted: #8A7B68;
+      --border: #EFE5D3;
+      --gold: #F5B731;
+      --gold-deep: #D99A12;
+      --orange: #E8730C;
+      --gold-soft: #FFF3D1;
+      --orange-soft: #FFE9D6;
+      --income: #15803D;
+      --income-soft: #DCFCE7;
+      --expense: #B42318;
+      --expense-soft: #FEE4E2;
+      --info: #1D4ED8;
+      --info-soft: #DBEAFE;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 2px rgba(42,33,24,.06);
+      --shadow-md: 0 8px 24px rgba(42,33,24,.08);
+      --ring: 0 0 0 3px rgba(245,183,49,.35);
+    }
+
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
-    body { margin: 0; font-family: Tahoma, Arial, sans-serif; background: #f3f4f8; color: #222; }
+    html, body { margin: 0; }
+    body {
+      font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select { font: inherit; }
+    button { cursor: pointer; transition: background .2s, color .2s, transform .15s, box-shadow .2s; }
+    button:active { transform: scale(.98); }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: none; box-shadow: var(--ring); }
 
     /* ===== Buttons ===== */
-    .lang-toggle, .ghost-btn {
-      background: rgba(255,255,255,0.2); border: none; color: #fff;
-      padding: 6px 14px; border-radius: 20px; cursor: pointer;
-      font-family: inherit; font-size: 13px;
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: var(--ink);
+      border: none; border-radius: var(--radius-md);
+      padding: 10px 20px; font-weight: 700; font-size: 15px;
+      box-shadow: 0 4px 14px rgba(232,115,12,.25);
     }
-    .primary-btn {
-      background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; border: none;
-      padding: 10px 18px; border-radius: 12px; font-family: inherit;
-      font-weight: 700; font-size: 15px; cursor: pointer;
+    .btn-primary:hover { box-shadow: 0 6px 18px rgba(232,115,12,.35); }
+    .btn-ghost {
+      background: var(--surface); color: var(--ink-2);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 8px 16px; font-weight: 600; font-size: 14px;
     }
-    .icon-btn { background: #f3f0ff; border: none; border-radius: 8px; padding: 5px 9px; cursor: pointer; font-size: 14px; }
+    .btn-ghost:hover { background: var(--surface-2); }
+    .btn-icon {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); width: 34px; height: 34px;
+      display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2);
+    }
+    .btn-icon:hover { background: var(--gold-soft); color: var(--ink); }
+    .btn-icon.danger:hover { background: var(--expense-soft); color: var(--expense); }
+    .btn-icon svg { width: 16px; height: 16px; }
 
     /* ===== Login ===== */
     .login-wrap {
-      min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(245,183,49,.45), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(232,115,12,.4), transparent 45%),
+        linear-gradient(160deg, #FFF3D1, #FFE0C2);
     }
     .login-card {
-      background: #fff; width: 100%; max-width: 380px; padding: 28px 26px;
-      border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      background: var(--surface); width: 100%; max-width: 400px;
+      padding: 34px 28px; border-radius: 24px; box-shadow: var(--shadow-md);
+      border: 1px solid rgba(255,255,255,.7);
     }
-    .login-card h1 { margin: 6px 0 6px; font-size: 24px; text-align: center; }
-    .login-card .sub { margin: 0 0 16px; color: #777; text-align: center; font-size: 14px; }
-    .login-card .lang-toggle { background: #f3f0ff; color: #764ba2; }
-    .login-card .primary-btn { width: 100%; margin-top: 18px; }
-    .login-error { color: #dc2626; text-align: center; margin-top: 12px; font-size: 14px; min-height: 20px; }
+    .login-mark {
+      width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 14px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: var(--ink);
+    }
+    .login-card h1 { margin: 0 0 4px; font-size: 24px; font-weight: 800; text-align: center; }
+    .login-card .sub { margin: 0 0 22px; color: var(--muted); text-align: center; font-size: 14px; }
+    .login-card .btn-primary { width: 100%; margin-top: 18px; padding: 12px; }
+    .login-error { color: var(--expense); text-align: center; margin-top: 12px; font-size: 14px; min-height: 20px; }
+    .lang-row { display: flex; justify-content: center; margin-bottom: 8px; }
 
     /* ===== Forms ===== */
-    label { display: block; margin-top: 12px; font-size: 14px; color: #444; }
+    label { display: block; margin-top: 14px; font-size: 14px; color: var(--ink-2); font-weight: 600; }
     input, select {
-      width: 100%; padding: 10px 12px; border: 2px solid #e0e0f0; border-radius: 12px;
-      font-size: 15px; font-family: inherit; margin-top: 6px; background: #fff;
+      width: 100%; margin-top: 6px; padding: 11px 14px;
+      background: var(--surface); color: var(--ink);
+      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      font-size: 15px;
     }
-    input:focus, select:focus { outline: none; border-color: #764ba2; }
+    input:focus, select:focus { border-color: var(--gold-deep); }
 
-    /* ===== Top bar & tabs ===== */
+    /* ===== Top bar ===== */
     .topbar {
-      background: linear-gradient(90deg, #667eea, #764ba2); color: #fff;
-      padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      background: #2A2118; color: #FFF7E6;
+      padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 6;
     }
-    .topbar .brand { font-weight: 700; font-size: 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 18px; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      display: inline-flex; align-items: center; justify-content: center; color: var(--ink); font-size: 15px; font-weight: 800;
+    }
     .top-actions { display: flex; gap: 8px; }
+    .top-actions .btn-ghost { background: rgba(255,255,255,.08); color: #FFF7E6; border-color: rgba(255,255,255,.15); }
+    .top-actions .btn-ghost:hover { background: rgba(255,255,255,.16); }
+
+    /* ===== Tabs ===== */
     .tabs {
-      background: #fff; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 5;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      display: flex; gap: 6px; padding: 10px 16px; overflow-x: auto;
+      position: sticky; top: 64px; z-index: 5;
     }
     .tab {
-      border: none; background: #f3f0ff; color: #764ba2; padding: 10px 18px; border-radius: 12px;
-      font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap;
+      border: none; background: transparent; color: var(--muted);
+      padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap;
     }
-    .tab.active { background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; }
+    .tab:hover { background: var(--surface-2); color: var(--ink); }
+    .tab.active { background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); box-shadow: 0 4px 12px rgba(232,115,12,.2); }
 
     /* ===== Layout ===== */
-    main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
+    .view-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+    .view-head h2 { margin: 0; font-size: 22px; font-weight: 800; }
+    .section-title { margin: 0 0 12px; font-size: 16px; font-weight: 700; color: var(--ink-2); }
     .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 20px; }
-    .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
-    .card h3, .section-title { margin: 0 0 14px; font-size: 17px; color: #764ba2; }
-    .view-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    .view-head h2 { margin: 0; color: #764ba2; font-size: 20px; }
+    .card {
+      background: var(--surface); border-radius: var(--radius-lg); padding: 22px;
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    }
+    .card h3 { margin: 0 0 14px; font-size: 16px; font-weight: 700; }
 
     /* ===== Stats ===== */
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-    .stat { background: #f7f5ff; border-radius: 12px; padding: 14px; text-align: center; }
-    .stat .num { font-size: 20px; font-weight: 700; color: #764ba2; }
-    .stat .lbl { font-size: 13px; color: #666; margin-top: 4px; }
-    .stat.income .num { color: #16a34a; }
-    .stat.expense .num { color: #dc2626; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+    .stat {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px; text-align: center;
+    }
+    .stat .num { font-size: 22px; font-weight: 800; color: var(--ink); }
+    .stat .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 600; }
+    .stat.income { background: var(--income-soft); border-color: transparent; }
+    .stat.income .num { color: var(--income); }
+    .stat.expense { background: var(--expense-soft); border-color: transparent; }
+    .stat.expense .num { color: var(--expense); }
+    .stat.net { background: var(--gold-soft); border-color: transparent; }
 
     /* ===== Lists ===== */
     .list { list-style: none; padding: 0; margin: 0; }
     .list li {
-      display: flex; justify-content: space-between; align-items: center; gap: 10px;
-      padding: 12px 4px; border-bottom: 1px solid #eee;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 14px 4px; border-bottom: 1px solid var(--border);
     }
     .list li:last-child { border-bottom: none; }
-    .row-title { font-weight: 600; }
-    .muted { color: #888; font-size: 13px; margin-top: 3px; }
+    .row-title { font-weight: 700; }
+    .muted { color: var(--muted); font-size: 13px; margin-top: 2px; }
     .row-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-    .amount { font-weight: 700; white-space: nowrap; }
-    .amount.income { color: #16a34a; }
-    .amount.expense { color: #dc2626; }
-    .empty { color: #888; text-align: center; padding: 14px 0; }
+    .amount { font-weight: 800; white-space: nowrap; }
+    .amount.income { color: var(--income); }
+    .amount.expense { color: var(--expense); }
+    .empty { color: var(--muted); text-align: center; padding: 24px 0; margin: 0; }
 
-    .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-    .done  { background: #dcfce7; color: #166534; }
-    .doing { background: #dbeafe; color: #1e40af; }
-    .todo  { background: #f3f4f6; color: #374151; }
-    .alert { background: #fee2e2; color: #991b1b; }
-    .warn  { background: #fef3c7; color: #92400e; }
+    .badge { font-size: 12px; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; display: inline-block; }
+    .done  { background: var(--income-soft); color: #166534; }
+    .doing { background: var(--info-soft); color: #1E40AF; }
+    .todo  { background: #F3F0EA; color: var(--ink-2); }
+    .alert { background: var(--expense-soft); color: #912018; }
+    .warn  { background: var(--gold-soft); color: #7A4A00; }
 
     .chart-box { position: relative; height: 260px; }
 
-    /* ===== Chat (Nono) ===== */
-    .chat-log { min-height: 200px; max-height: 400px; overflow-y: auto; margin-bottom: 12px; white-space: pre-wrap; }
-    .chat-log p { margin: 8px 0; }
+    /* ===== Nono chat ===== */
+    .chat-log {
+      min-height: 260px; max-height: 420px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; padding-inline-end: 4px;
+    }
+    .bubble {
+      max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 15px; white-space: pre-wrap; word-break: break-word;
+    }
+    .bubble.you { align-self: flex-end; background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); border-bottom-inline-end-radius: 6px; }
+    .bubble.bot { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); border-bottom-inline-start-radius: 6px; }
+    .bubble.pending { opacity: .6; }
     .chat-form { display: flex; gap: 8px; }
     .chat-form input { margin-top: 0; }
+    .chat-form .btn-primary { flex-shrink: 0; }
 
     /* ===== Modal ===== */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10;
+      position: fixed; inset: 0; background: rgba(42,33,24,.45); backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 20;
     }
-    .modal { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; }
-    .modal h3 { margin: 0 0 6px; color: #764ba2; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-    .modal .ghost-btn { background: #f3f0ff; color: #764ba2; }
+    .modal { background: var(--surface); border-radius: var(--radius-lg); padding: 26px; width: 100%; max-width: 440px; box-shadow: var(--shadow-md); }
+    .modal h3 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    @media (max-width: 640px) {
+      .topbar { padding: 14px 16px; }
+      .tabs { top: 62px; }
+      main { padding: 18px 14px 40px; }
+      .card { padding: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -126,9 +230,10 @@
   <!-- ===== Login ===== -->
   <div id="loginPage" class="login-wrap">
     <form class="login-card" id="loginForm">
-      <div style="text-align:center">
-        <button type="button" class="lang-toggle" data-action="toggleLang"></button>
+      <div class="lang-row">
+        <button type="button" class="btn-ghost lang-toggle" data-action="toggleLang"></button>
       </div>
+      <div class="login-mark">A</div>
       <h1 data-i18n="appTitle"></h1>
       <p class="sub" data-i18n="loginSub"></p>
       <label><span data-i18n="email"></span>
@@ -137,7 +242,7 @@
       <label><span data-i18n="password"></span>
         <input type="password" id="password" required autocomplete="current-password">
       </label>
-      <button type="submit" class="primary-btn" data-i18n="login"></button>
+      <button type="submit" class="btn-primary" data-i18n="login"></button>
       <div class="login-error" id="loginError"></div>
     </form>
   </div>
@@ -145,10 +250,13 @@
   <!-- ===== App ===== -->
   <div id="app" hidden>
     <header class="topbar">
-      <div class="brand" data-i18n="appTitle"></div>
+      <div class="brand">
+        <span class="brand-mark">A</span>
+        <span data-i18n="appTitle"></span>
+      </div>
       <div class="top-actions">
-        <button class="lang-toggle" data-action="toggleLang"></button>
-        <button class="ghost-btn" data-action="logout" data-i18n="logout"></button>
+        <button class="btn-ghost lang-toggle" data-action="toggleLang"></button>
+        <button class="btn-ghost" data-action="logout" data-i18n="logout"></button>
       </div>
     </header>
 
@@ -174,8 +282,8 @@
         <h3 id="modalTitle"></h3>
         <div id="modalFields"></div>
         <div class="modal-actions">
-          <button type="button" class="ghost-btn" data-action="closeModal" data-i18n="cancel"></button>
-          <button type="submit" class="primary-btn" data-i18n="save"></button>
+          <button type="button" class="btn-ghost" data-action="closeModal" data-i18n="cancel"></button>
+          <button type="submit" class="btn-primary" data-i18n="save"></button>
         </div>
       </form>
     </div>
@@ -188,6 +296,10 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const ASSISTANT_URL = "https://tjijgrysaeljfzwkgbpa.supabase.co/functions/v1/rapid-service";
 
+    // ===== Icons (SVG, no emoji) =====
+    const ICON_EDIT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
+    const ICON_DEL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`;
+
     // ===== Translations =====
     const T = {
       ar: {
@@ -195,11 +307,11 @@
         email: "الإيميل", password: "الباسورد", login: "دخول", logout: "تسجيل خروج",
         loginFailed: "الإيميل أو الباسورد غلط",
         tabDashboard: "الرئيسية", tabTasks: "المهام", tabTransactions: "المصروفات", tabProjects: "المشاريع",
-        tabAssistant: "نونو 🤖",
+        tabAssistant: "نونو",
         thisMonth: "الشهر ده", income: "دخل", expenses: "مصروف", net: "صافي", subscriptions: "اشتراكات",
-        attention: "🔔 محتاج انتباهك", nothingAttention: "مفيش حاجة محتاجة انتباهك دلوقتي 👍",
+        attention: "محتاج انتباهك", nothingAttention: "مفيش حاجة محتاجة انتباهك دلوقتي",
         overdue: "متأخرة {n} يوم", dueToday: "موعدها النهارده", daysLeft: "باقي {n} يوم",
-        monthlyChart: "💸 المصروفات الشهرية",
+        monthlyChart: "المصروفات الشهرية",
         add: "+ جديد", edit: "تعديل", delete: "حذف", save: "حفظ", cancel: "إلغاء",
         confirmDelete: "متأكد إنك عايز تحذف؟",
         status_todo: "لسه", status_doing: "جاري", status_done: "مكتمل",
@@ -208,17 +320,19 @@
         f_type: "النوع", f_category: "التصنيف", f_amount: "المبلغ", f_name: "اسم المشروع", f_client: "العميل",
         empty: "مفيش بيانات لسه", currency: "ج.م",
         chatPlaceholder: "اسألني عن أي حاجة في الداتا...", chatSend: "ابعت", chatYou: "إنت", chatBot: "نونو",
+        chatHint: "اسأل نونو عن مصروفاتك أو مهامك أو مشاريعك",
+        chatThinking: "نونو بيفكر...",
       },
       en: {
         appTitle: "Admin Dashboard", loginSub: "Sign in to see your dashboard",
         email: "Email", password: "Password", login: "Sign in", logout: "Sign out",
         loginFailed: "Wrong email or password",
         tabDashboard: "Dashboard", tabTasks: "Tasks", tabTransactions: "Expenses", tabProjects: "Projects",
-        tabAssistant: "Nono 🤖",
+        tabAssistant: "Nono",
         thisMonth: "This month", income: "Income", expenses: "Expenses", net: "Net", subscriptions: "Subscriptions",
-        attention: "🔔 Needs your attention", nothingAttention: "Nothing needs your attention right now 👍",
+        attention: "Needs your attention", nothingAttention: "Nothing needs your attention right now",
         overdue: "Overdue by {n} day(s)", dueToday: "Due today", daysLeft: "{n} day(s) left",
-        monthlyChart: "💸 Monthly expenses",
+        monthlyChart: "Monthly expenses",
         add: "+ New", edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel",
         confirmDelete: "Are you sure you want to delete this?",
         status_todo: "To do", status_doing: "In progress", status_done: "Done",
@@ -227,6 +341,8 @@
         f_type: "Type", f_category: "Category", f_amount: "Amount", f_name: "Project name", f_client: "Client",
         empty: "No data yet", currency: "EGP",
         chatPlaceholder: "Ask me anything about your data...", chatSend: "Send", chatYou: "You", chatBot: "Nono",
+        chatHint: "Ask Nono about your expenses, tasks or projects",
+        chatThinking: "Nono is thinking...",
       },
     };
 
@@ -270,6 +386,7 @@
     let currentTab = "dashboard";
     let chart = null;
     const cache = { tasks: [], transactions: [], projects: [] };
+    const chatMessages = []; // { who: "you" | "bot", text, pending }
 
     // ===== Helpers =====
     function t(key, vars = {}) {
@@ -312,6 +429,7 @@
       document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
       document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
       document.querySelectorAll(".lang-toggle").forEach(b => b.textContent = lang === "ar" ? "English" : "عربي");
+      // tab labels are data-i18n too, so they already updated above
     }
 
     // ===== Data =====
@@ -337,7 +455,7 @@
       renderList("tasks");
       renderList("transactions");
       renderList("projects");
-      renderAssistant();
+      renderChat();
       showTab(currentTab);
     }
 
@@ -362,7 +480,7 @@
         .map(x => {
           const d = daysUntil(x.due_date);
           const msg = d < 0 ? t("overdue", { n: Math.abs(d) }) : d === 0 ? t("dueToday") : t("daysLeft", { n: d });
-          return `<li><span>${esc(x.title)}</span><span class="badge ${d < 0 ? "alert" : "warn"}">${msg}</span></li>`;
+          return `<li><span class="row-title">${esc(x.title)}</span><span class="badge ${d < 0 ? "alert" : "warn"}">${msg}</span></li>`;
         });
 
       const byMonth = {};
@@ -374,12 +492,12 @@
       const values = labels.map(l => byMonth[l]);
 
       el.innerHTML = `
-        <h2 class="section-title">${t("thisMonth")}</h2>
+        <div class="view-head"><h2>${t("thisMonth")}</h2></div>
         <div class="card">
           <div class="stats">
             <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">${t("income")}</div></div>
             <div class="stat expense"><div class="num">${money(expense)}</div><div class="lbl">${t("expenses")}</div></div>
-            <div class="stat"><div class="num">${money(income - expense)}</div><div class="lbl">${t("net")}</div></div>
+            <div class="stat net"><div class="num">${money(income - expense)}</div><div class="lbl">${t("net")}</div></div>
             <div class="stat"><div class="num">${money(subs)}</div><div class="lbl">${t("subscriptions")}</div></div>
           </div>
         </div>
@@ -399,9 +517,29 @@
         type: "bar",
         data: {
           labels,
-          datasets: [{ label: t("expenses"), data: values, backgroundColor: "#764ba2", borderRadius: 8 }],
+          datasets: [{
+            label: t("expenses"),
+            data: values,
+            backgroundColor: (ctx) => {
+              const { chart: c, index } = ctx;
+              const g = c.ctx.createLinearGradient(0, 0, 0, c.height);
+              g.addColorStop(0, "#F5B731");
+              g.addColorStop(1, "#E8730C");
+              return g;
+            },
+            borderRadius: 10,
+            maxBarThickness: 48,
+          }],
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: "#8A7B68" } },
+            y: { grid: { color: "#EFE5D3" }, ticks: { color: "#8A7B68" }, beginAtZero: true },
+          },
+        },
       });
     }
 
@@ -442,8 +580,8 @@
                 </div>
                 <div class="row-side">
                   ${i.right}
-                  <button class="icon-btn" data-action="edit" data-table="${name}" data-id="${r.id}">✏️</button>
-                  <button class="icon-btn" data-action="delete" data-table="${name}" data-id="${r.id}">🗑️</button>
+                  <button class="btn-icon" data-action="edit" data-table="${name}" data-id="${r.id}" aria-label="${t("edit")}">${ICON_EDIT}</button>
+                  <button class="btn-icon danger" data-action="delete" data-table="${name}" data-id="${r.id}" aria-label="${t("delete")}">${ICON_DEL}</button>
                 </div>
               </li>`;
           }).join("")}</ul>`
@@ -452,37 +590,56 @@
       el.innerHTML = `
         <div class="view-head">
           <h2>${t(TAB_KEY[name])}</h2>
-          <button class="primary-btn" data-action="add" data-table="${name}">${t("add")}</button>
+          <button class="btn-primary" data-action="add" data-table="${name}">${t("add")}</button>
         </div>
         <div class="card">${body}</div>`;
     }
 
     // ===== Nono (assistant) =====
-    function renderAssistant() {
-      const el = document.getElementById("view-assistant");
-      const prevLog = document.getElementById("chatLog")?.innerHTML || "";
-      el.innerHTML = `
-        <div class="view-head"><h2>${t("tabAssistant")}</h2></div>
+    // Built once; only the labels and chat log are re-rendered, so the conversation survives language changes and tab switches.
+    function buildChatShell() {
+      document.getElementById("view-assistant").innerHTML = `
+        <div class="view-head"><h2 id="chatTitle"></h2></div>
         <div class="card">
-          <div class="chat-log" id="chatLog">${prevLog}</div>
+          <div class="chat-log" id="chatLog"></div>
           <form class="chat-form" id="chatForm">
-            <input id="chatInput" placeholder="${t("chatPlaceholder")}">
-            <button class="primary-btn" type="submit">${t("chatSend")}</button>
+            <input id="chatInput" autocomplete="off">
+            <button class="btn-primary" type="submit" id="chatSendBtn"></button>
           </form>
         </div>`;
       document.getElementById("chatForm").addEventListener("submit", sendToNono);
     }
 
+    function renderChat() {
+      document.getElementById("chatTitle").textContent = t("tabAssistant");
+      document.getElementById("chatInput").placeholder = t("chatPlaceholder");
+      document.getElementById("chatSendBtn").textContent = t("chatSend");
+
+      const log = document.getElementById("chatLog");
+      if (!chatMessages.length) {
+        log.innerHTML = `<p class="empty">${t("chatHint")}</p>`;
+        return;
+      }
+      log.innerHTML = chatMessages.map(m => {
+        const who = m.who === "you" ? t("chatYou") : t("chatBot");
+        const cls = `bubble ${m.who}${m.pending ? " pending" : ""}`;
+        return `<div class="${cls}"><b>${who}</b><br>${esc(m.text)}</div>`;
+      }).join("");
+      log.scrollTop = log.scrollHeight;
+    }
+
     async function sendToNono(e) {
       e.preventDefault();
       const input = document.getElementById("chatInput");
-      const log = document.getElementById("chatLog");
       const message = input.value.trim();
       if (!message) return;
       input.value = "";
-      log.insertAdjacentHTML("beforeend", `<p><b>${t("chatYou")}:</b> ${esc(message)}</p>`);
-      log.scrollTop = log.scrollHeight;
 
+      chatMessages.push({ who: "you", text: message });
+      chatMessages.push({ who: "bot", text: t("chatThinking"), pending: true });
+      renderChat();
+
+      let reply;
       try {
         const { data: { session } } = await sb.auth.getSession();
         const res = await fetch(ASSISTANT_URL, {
@@ -495,11 +652,14 @@
           body: JSON.stringify({ message }),
         });
         const json = await res.json();
-        log.insertAdjacentHTML("beforeend", `<p><b>${t("chatBot")}:</b> ${esc(json.reply || json.error || "No response")}</p>`);
+        reply = json.reply || json.error || "No response";
       } catch (err) {
-        log.insertAdjacentHTML("beforeend", `<p><b>${t("chatBot")}:</b> ${esc(String(err))}</p>`);
+        reply = String(err);
       }
-      log.scrollTop = log.scrollHeight;
+
+      chatMessages.pop(); // remove the "thinking" placeholder
+      chatMessages.push({ who: "bot", text: reply });
+      renderChat();
     }
 
     // ===== Modal (add / edit) =====
@@ -507,7 +667,7 @@
       const row = id ? (cache[table].find(r => String(r.id) === String(id)) || {}) : {};
       editing = { table, id };
 
-      document.getElementById("modalTitle").textContent = t(id ? "edit" : "add") + " - " + t(TAB_KEY[table]);
+      document.getElementById("modalTitle").textContent = t(id ? "edit" : "add") + " · " + t(TAB_KEY[table]);
       document.getElementById("modalFields").innerHTML = SCHEMAS[table].fields.map(f => {
         const val = row[f.name] ?? "";
         const label = t("f_" + f.name);
@@ -617,6 +777,7 @@
       }
     });
 
+    buildChatShell();
     applyI18n();
   </script>
 </body>
