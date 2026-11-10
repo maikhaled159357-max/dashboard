@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -14,7 +14,6 @@
       background: #f3f4f8;
       color: #222;
     }
-
 
     /* ===== صفحة الدخول ===== */
     #loginPage {
@@ -61,7 +60,6 @@
     }
     .login-error { color: #dc2626; text-align: center; margin-top: 12px; font-size: 14px; min-height: 20px; }
 
-
     /* ===== الداشبورد ===== */
     #dashboard { display: none; }
     header {
@@ -83,7 +81,6 @@
       font-size: 13px;
     }
 
-
     main {
       padding: 20px;
       display: grid;
@@ -101,7 +98,6 @@
     .card h2 { margin: 0 0 14px; font-size: 17px; color: #764ba2; }
     .full { grid-column: 1 / -1; }
 
-
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
     .stat {
       background: #f7f5ff;
@@ -113,7 +109,6 @@
     .stat .lbl { font-size: 13px; color: #666; margin-top: 4px; }
     .stat.income .num { color: #16a34a; }
     .stat.expense .num { color: #dc2626; }
-
 
     ul { list-style: none; padding: 0; margin: 0; }
     li {
@@ -127,7 +122,6 @@
     li:last-child { border-bottom: none; }
     .muted { color: #888; font-size: 13px; margin-top: 3px; }
 
-
     .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .done  { background: #dcfce7; color: #166534; }
     .doing { background: #dbeafe; color: #1e40af; }
@@ -135,13 +129,11 @@
     .alert { background: #fee2e2; color: #991b1b; }
     .warn  { background: #fef3c7; color: #92400e; }
 
-
     .chart-box { position: relative; height: 260px; }
     .empty { color: #888; text-align: center; padding: 14px 0; }
   </style>
 </head>
 <body>
-
 
   <!-- ===== صفحة الدخول ===== -->
   <div id="loginPage">
@@ -149,20 +141,16 @@
       <h1>Admin</h1>
       <p class="sub">سجّل دخولك عشان تشوف لوحتك</p>
 
-
       <label for="email">الإيميل</label>
       <input type="email" id="email" required autocomplete="username">
 
-
       <label for="password">الباسورد</label>
       <input type="password" id="password" required autocomplete="current-password">
-
 
       <button type="submit">دخول</button>
       <div class="login-error" id="loginError"></div>
     </form>
   </div>
-
 
   <!-- ===== الداشبورد ===== -->
   <div id="dashboard">
@@ -172,31 +160,26 @@
       <button class="logout" onclick="logout()">تسجيل خروج</button>
     </header>
 
-
     <main>
       <section class="card full">
         <h2>الشهر ده</h2>
         <div class="stats" id="monthStats"></div>
       </section>
 
-
       <section class="card">
         <h2>🔔 محتاج انتباهك</h2>
         <ul id="alerts"></ul>
       </section>
-
 
       <section class="card">
         <h2>📋 مهامي</h2>
         <ul id="tasks"></ul>
       </section>
 
-
       <section class="card">
         <h2>💸 المصروفات الشهرية</h2>
         <div class="chart-box"><canvas id="expenseChart"></canvas></div>
       </section>
-
 
       <section class="card">
         <h2>🧾 تفاصيل المصروفات</h2>
@@ -205,14 +188,12 @@
     </main>
   </div>
 
-
   <script>
     // ===== Supabase =====
     const supabase = window.supabase.createClient(
       "https://tjijgrysaeljfzwkgbpa.supabase.co",
       "sb_publishable_6xZmYA_CVRbTsn-ieN332Q_nmesQx5o"
     );
-
 
     // ===== بيانات تجريبية: هنستبدلها ببيانات حقيقية لاحقاً =====
     const tasks = [
@@ -221,7 +202,6 @@
       { id: 3, title: "إعداد فاتورة شهر أكتوبر", status: "done",  due: "2026-11-05" },
       { id: 4, title: "تحديث الموقع",            status: "todo",  due: "2026-11-08" },
     ];
-
 
     const transactions = [
       { date: "2026-10-03", type: "expense", category: "إيجار",    amount: 3500 },
@@ -234,13 +214,11 @@
       { date: "2026-11-08", type: "expense", category: "اشتراكات", amount: 750 },
     ];
 
-
     // ===== أدوات مساعدة =====
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const statusLabel = { done: "مكتمل", doing: "جاري", todo: "لسه" };
     const statusClass = { done: "done", doing: "doing", todo: "todo" };
-
 
     function daysUntil(dateStr) {
       const d = new Date(dateStr);
@@ -248,11 +226,9 @@
       return Math.round((d - today) / 86400000);
     }
 
-
     function money(n) {
       return n.toLocaleString("ar-EG") + " ج.م";
     }
-
 
     // ===== الدخول والخروج =====
     async function handleLogin(e) {
@@ -260,19 +236,15 @@
       const email = document.getElementById("email").value.trim();
       const password = document.getElementById("password").value;
 
-
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-
 
       if (error) {
         document.getElementById("loginError").textContent = "الإيميل أو الباسورد غلط";
         return;
       }
 
-
       showDashboard();
     }
-
 
     async function logout() {
       await supabase.auth.signOut();
@@ -281,7 +253,6 @@
       document.getElementById("password").value = "";
     }
 
-
     function showDashboard() {
       document.getElementById("loginPage").style.display = "none";
       document.getElementById("dashboard").style.display = "block";
@@ -289,19 +260,16 @@
       renderDashboard();
     }
 
-
     // لو الجلسة موجودة من قبل، يدخل على طول
     async function checkSession() {
       const { data } = await supabase.auth.getSession();
       if (data.session) showDashboard();
     }
 
-
     // ===== الرسم =====
     function renderDashboard() {
       document.getElementById("todayText").textContent =
         today.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-
 
       renderMonthStats();
       renderAlerts();
@@ -310,16 +278,13 @@
       renderChart();
     }
 
-
     function renderMonthStats() {
       const monthKey = today.toISOString().slice(0, 7);
       const monthTx = transactions.filter(t => t.date.startsWith(monthKey));
 
-
       const income = monthTx.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
       const expense = monthTx.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
       const subs = monthTx.filter(t => t.category === "اشتراكات").reduce((s, t) => s + t.amount, 0);
-
 
       document.getElementById("monthStats").innerHTML = `
         <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">دخل</div></div>
@@ -329,7 +294,6 @@
       `;
     }
 
-
     function renderAlerts() {
       const list = document.getElementById("alerts");
       const items = tasks
@@ -338,40 +302,35 @@
           const d = daysUntil(t.due);
           const msg = d < 0 ? `متأخرة ${Math.abs(d)} يوم` : d === 0 ? "موعدها النهارده" : `باقي ${d} يوم`;
           const cls = d < 0 ? "alert" : "warn";
-          return `<li><span>${t.title}</span><span class="badge {msg}</span></li>`;
+          return `<li><span>${t.title}</span><span class="badge ${cls}">${msg}</span></li>`;
         });
-
 
       list.innerHTML = items.length
         ? items.join("")
         : `<li class="empty">مفيش حاجة محتاجة انتباهك دلوقتي 👍</li>`;
     }
 
-
     function renderTasks() {
       document.getElementById("tasks").innerHTML = tasks.map(t => `
         <li>
           <span>${t.title}<div class="muted">الموعد: ${t.due}</div></span>
-          <span class="badge {statusLabel[t.status]}</span>
+          <span class="badge ${statusClass[t.status]}">${statusLabel[t.status]}</span>
         </li>
       `).join("");
     }
-
 
     function renderExpenses() {
       const expenses = transactions
         .filter(t => t.type === "expense")
         .sort((a, b) => b.date.localeCompare(a.date));
 
-
       document.getElementById("expenses").innerHTML = expenses.map(e => `
         <li>
-          <span>{e.date}</div></span>
+          <span>${e.category}<div class="muted">${e.date}</div></span>
           <span>${money(e.amount)}</span>
         </li>
       `).join("");
     }
-
 
     function renderChart() {
       const byMonth = {};
@@ -382,10 +341,8 @@
           byMonth[m] = (byMonth[m] || 0) + e.amount;
         });
 
-
       const labels = Object.keys(byMonth).sort();
       const values = labels.map(l => byMonth[l]);
-
 
       new Chart(document.getElementById("expenseChart"), {
         type: "bar",
@@ -405,7 +362,6 @@
         },
       });
     }
-
 
     checkSession();
   </script>
