@@ -1,242 +1,564 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Tahoma, Arial, sans-serif;
-      background: #f3f4f8;
-      color: #222;
+    [hidden] { display: none !important; }
+    body { margin: 0; font-family: Tahoma, Arial, sans-serif; background: #f3f4f8; color: #222; }
+
+    /* ===== Buttons ===== */
+    .lang-toggle, .ghost-btn {
+      background: rgba(255,255,255,0.2); border: none; color: #fff;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer;
+      font-family: inherit; font-size: 13px;
     }
-    header {
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      color: #fff;
-      padding: 22px 20px;
+    .primary-btn {
+      background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; border: none;
+      padding: 10px 18px; border-radius: 12px; font-family: inherit;
+      font-weight: 700; font-size: 15px; cursor: pointer;
     }
-    header .hello { font-size: 22px; font-weight: 700; margin: 0; }
-    header .date { font-size: 14px; opacity: 0.9; margin-top: 4px; }
-    main {
-      padding: 20px;
-      display: grid;
-      gap: 20px;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      max-width: 1200px;
-      margin: 0 auto;
+    .icon-btn { background: #f3f0ff; border: none; border-radius: 8px; padding: 5px 9px; cursor: pointer; font-size: 14px; }
+
+    /* ===== Login ===== */
+    .login-wrap {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2); padding: 20px;
     }
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    .login-card {
+      background: #fff; width: 100%; max-width: 380px; padding: 28px 26px;
+      border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
     }
-    .card h2 { margin: 0 0 14px; font-size: 17px; color: #764ba2; }
-    .full { grid-column: 1 / -1; }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+    .login-card h1 { margin: 6px 0 6px; font-size: 24px; text-align: center; }
+    .login-card .sub { margin: 0 0 16px; color: #777; text-align: center; font-size: 14px; }
+    .login-card .lang-toggle { background: #f3f0ff; color: #764ba2; }
+    .login-card .primary-btn { width: 100%; margin-top: 18px; }
+    .login-error { color: #dc2626; text-align: center; margin-top: 12px; font-size: 14px; min-height: 20px; }
+
+    /* ===== Forms ===== */
+    label { display: block; margin-top: 12px; font-size: 14px; color: #444; }
+    input, select {
+      width: 100%; padding: 10px 12px; border: 2px solid #e0e0f0; border-radius: 12px;
+      font-size: 15px; font-family: inherit; margin-top: 6px; background: #fff;
+    }
+    input:focus, select:focus { outline: none; border-color: #764ba2; }
+
+    /* ===== Top bar & tabs ===== */
+    .topbar {
+      background: linear-gradient(90deg, #667eea, #764ba2); color: #fff;
+      padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    }
+    .topbar .brand { font-weight: 700; font-size: 18px; }
+    .top-actions { display: flex; gap: 8px; }
+    .tabs {
+      background: #fff; display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 5;
+    }
+    .tab {
+      border: none; background: #f3f0ff; color: #764ba2; padding: 10px 18px; border-radius: 12px;
+      font-family: inherit; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap;
+    }
+    .tab.active { background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; }
+
+    /* ===== Layout ===== */
+    main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 20px; }
+    .card { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+    .card h3, .section-title { margin: 0 0 14px; font-size: 17px; color: #764ba2; }
+    .view-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .view-head h2 { margin: 0; color: #764ba2; font-size: 20px; }
+
+    /* ===== Stats ===== */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
     .stat { background: #f7f5ff; border-radius: 12px; padding: 14px; text-align: center; }
     .stat .num { font-size: 20px; font-weight: 700; color: #764ba2; }
     .stat .lbl { font-size: 13px; color: #666; margin-top: 4px; }
     .stat.income .num { color: #16a34a; }
     .stat.expense .num { color: #dc2626; }
-    ul { list-style: none; padding: 0; margin: 0; }
-    li {
-      padding: 11px 4px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
+
+    /* ===== Lists ===== */
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list li {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 12px 4px; border-bottom: 1px solid #eee;
     }
-    li:last-child { border-bottom: none; }
+    .list li:last-child { border-bottom: none; }
+    .row-title { font-weight: 600; }
     .muted { color: #888; font-size: 13px; margin-top: 3px; }
+    .row-side { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .amount { font-weight: 700; white-space: nowrap; }
+    .amount.income { color: #16a34a; }
+    .amount.expense { color: #dc2626; }
+    .empty { color: #888; text-align: center; padding: 14px 0; }
+
     .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .done  { background: #dcfce7; color: #166534; }
     .doing { background: #dbeafe; color: #1e40af; }
     .todo  { background: #f3f4f6; color: #374151; }
     .alert { background: #fee2e2; color: #991b1b; }
     .warn  { background: #fef3c7; color: #92400e; }
+
     .chart-box { position: relative; height: 260px; }
-    .empty { color: #888; text-align: center; padding: 14px 0; }
+
+    /* ===== Modal ===== */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10;
+    }
+    .modal { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 420px; }
+    .modal h3 { margin: 0 0 6px; color: #764ba2; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+    .modal .ghost-btn { background: #f3f0ff; color: #764ba2; }
   </style>
 </head>
 <body>
 
-  <header>
-    <p class="hello">Good morning, Admin</p>
-    <p class="date" id="todayText"></p>
-  </header>
+  <!-- ===== Login ===== -->
+  <div id="loginPage" class="login-wrap">
+    <form class="login-card" id="loginForm">
+      <div style="text-align:center">
+        <button type="button" class="lang-toggle" data-action="toggleLang"></button>
+      </div>
+      <h1 data-i18n="appTitle"></h1>
+      <p class="sub" data-i18n="loginSub"></p>
+      <label><span data-i18n="email"></span>
+        <input type="email" id="email" required autocomplete="username">
+      </label>
+      <label><span data-i18n="password"></span>
+        <input type="password" id="password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="primary-btn" data-i18n="login"></button>
+      <div class="login-error" id="loginError"></div>
+    </form>
+  </div>
 
-  <main>
-    <section class="card full">
-      <h2>This Month</h2>
-      <div class="stats" id="monthStats"></div>
-    </section>
+  <!-- ===== App ===== -->
+  <div id="app" hidden>
+    <header class="topbar">
+      <div class="brand" data-i18n="appTitle"></div>
+      <div class="top-actions">
+        <button class="lang-toggle" data-action="toggleLang"></button>
+        <button class="ghost-btn" data-action="logout" data-i18n="logout"></button>
+      </div>
+    </header>
 
-    <section class="card">
-      <h2>Needs your attention</h2>
-      <ul id="alerts"></ul>
-    </section>
+    <nav class="tabs">
+      <button class="tab active" data-tab="dashboard" data-i18n="tabDashboard"></button>
+      <button class="tab" data-tab="tasks" data-i18n="tabTasks"></button>
+      <button class="tab" data-tab="transactions" data-i18n="tabTransactions"></button>
+      <button class="tab" data-tab="projects" data-i18n="tabProjects"></button>
+    </nav>
 
-    <section class="card">
-      <h2>My tasks</h2>
-      <ul id="tasks"></ul>
-    </section>
+    <main>
+      <section id="view-dashboard" class="view"></section>
+      <section id="view-tasks" class="view" hidden></section>
+      <section id="view-transactions" class="view" hidden></section>
+      <section id="view-projects" class="view" hidden></section>
+    </main>
 
-    <section class="card">
-      <h2>Monthly expenses</h2>
-      <div class="chart-box"><canvas id="expenseChart"></canvas></div>
-    </section>
-
-    <section class="card">
-      <h2>Expense details</h2>
-      <ul id="expenses"></ul>
-    </section>
-  </main>
+    <!-- Add / Edit modal -->
+    <div class="modal-backdrop" id="modal" hidden>
+      <form class="modal" id="modalForm">
+        <h3 id="modalTitle"></h3>
+        <div id="modalFields"></div>
+        <div class="modal-actions">
+          <button type="button" class="ghost-btn" data-action="closeModal" data-i18n="cancel"></button>
+          <button type="submit" class="primary-btn" data-i18n="save"></button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
-    // ===== Sample data: replace with real data later =====
-    const tasks = [
-      { id: 1, title: "Send sales report",     status: "doing", due: "2026-11-10" },
-      { id: 2, title: "Review client contract", status: "todo",  due: "2026-11-12" },
-      { id: 3, title: "Prepare October invoice", status: "done", due: "2026-11-05" },
-      { id: 4, title: "Update website",          status: "todo",  due: "2026-11-08" },
-    ];
+    // ===== Supabase =====
+    const SUPABASE_URL = "https://tjijgrysaeljfzwkgbpa.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_6xZmYA_CVRbTsn-ieN332Q_nmesQx5o";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const transactions = [
-      { date: "2026-10-03", type: "expense", category: "Rent",          amount: 3500 },
-      { date: "2026-10-10", type: "expense", category: "Internet",      amount: 400 },
-      { date: "2026-10-15", type: "income",  category: "Client",        amount: 5000 },
-      { date: "2026-10-22", type: "expense", category: "Transport",     amount: 600 },
-      { date: "2026-11-02", type: "expense", category: "Rent",          amount: 3500 },
-      { date: "2026-11-06", type: "income",  category: "Client",        amount: 2200 },
-      { date: "2026-11-06", type: "expense", category: "Food",          amount: 900 },
-      { date: "2026-11-08", type: "expense", category: "Subscriptions", amount: 750 },
-    ];
+    // ===== Translations =====
+    const T = {
+      ar: {
+        appTitle: "لوحة المتابعة", loginSub: "سجّل دخولك عشان تشوف لوحتك",
+        email: "الإيميل", password: "الباسورد", login: "دخول", logout: "تسجيل خروج",
+        loginFailed: "الإيميل أو الباسورد غلط",
+        tabDashboard: "الرئيسية", tabTasks: "المهام", tabTransactions: "المصروفات", tabProjects: "المشاريع",
+        thisMonth: "الشهر ده", income: "دخل", expenses: "مصروف", net: "صافي", subscriptions: "اشتراكات",
+        attention: "🔔 محتاج انتباهك", nothingAttention: "مفيش حاجة محتاجة انتباهك دلوقتي 👍",
+        overdue: "متأخرة {n} يوم", dueToday: "موعدها النهارده", daysLeft: "باقي {n} يوم",
+        monthlyChart: "💸 المصروفات الشهرية",
+        add: "+ جديد", edit: "تعديل", delete: "حذف", save: "حفظ", cancel: "إلغاء",
+        confirmDelete: "متأكد إنك عايز تحذف؟",
+        status_todo: "لسه", status_doing: "جاري", status_done: "مكتمل",
+        type_income: "دخل", type_expense: "مصروف",
+        f_title: "العنوان", f_status: "الحالة", f_due_date: "الموعد", f_date: "التاريخ",
+        f_type: "النوع", f_category: "التصنيف", f_amount: "المبلغ", f_name: "اسم المشروع", f_client: "العميل",
+        empty: "مفيش بيانات لسه", currency: "ج.م",
+      },
+      en: {
+        appTitle: "Admin Dashboard", loginSub: "Sign in to see your dashboard",
+        email: "Email", password: "Password", login: "Sign in", logout: "Sign out",
+        loginFailed: "Wrong email or password",
+        tabDashboard: "Dashboard", tabTasks: "Tasks", tabTransactions: "Expenses", tabProjects: "Projects",
+        thisMonth: "This month", income: "Income", expenses: "Expenses", net: "Net", subscriptions: "Subscriptions",
+        attention: "🔔 Needs your attention", nothingAttention: "Nothing needs your attention right now 👍",
+        overdue: "Overdue by {n} day(s)", dueToday: "Due today", daysLeft: "{n} day(s) left",
+        monthlyChart: "💸 Monthly expenses",
+        add: "+ New", edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel",
+        confirmDelete: "Are you sure you want to delete this?",
+        status_todo: "To do", status_doing: "In progress", status_done: "Done",
+        type_income: "Income", type_expense: "Expense",
+        f_title: "Title", f_status: "Status", f_due_date: "Due date", f_date: "Date",
+        f_type: "Type", f_category: "Category", f_amount: "Amount", f_name: "Project name", f_client: "Client",
+        empty: "No data yet", currency: "EGP",
+      },
+    };
+
+    const TAB_KEY = { dashboard: "tabDashboard", tasks: "tabTasks", transactions: "tabTransactions", projects: "tabProjects" };
+
+    // ===== Table schemas: edit these to change fields =====
+    const SCHEMAS = {
+      tasks: {
+        table: "tasks",
+        fields: [
+          { name: "title", type: "text", required: true },
+          { name: "status", type: "select", options: ["todo", "doing", "done"], optionKey: "status_" },
+          { name: "due_date", type: "date" },
+        ],
+      },
+      transactions: {
+        table: "transactions",
+        fields: [
+          { name: "date", type: "date", required: true },
+          { name: "type", type: "select", options: ["income", "expense"], optionKey: "type_" },
+          { name: "category", type: "text", required: true },
+          { name: "amount", type: "number", required: true },
+        ],
+      },
+      projects: {
+        table: "projects",
+        fields: [
+          { name: "name", type: "text", required: true },
+          { name: "client", type: "text" },
+          { name: "status", type: "select", options: ["todo", "doing", "done"], optionKey: "status_" },
+          { name: "amount", type: "number" },
+          { name: "due_date", type: "date" },
+        ],
+      },
+    };
+
+    // ===== State =====
+    let lang = "ar";
+    let user = null;
+    let editing = null;
+    let currentTab = "dashboard";
+    let chart = null;
+    const cache = { tasks: [], transactions: [], projects: [] };
 
     // ===== Helpers =====
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    function t(key, vars = {}) {
+      let s = T[lang][key] ?? T.en[key] ?? key;
+      for (const k in vars) s = s.replace(`{${k}}`, vars[k]);
+      return s;
+    }
 
-    const statusLabel = { done: "Done", doing: "In progress", todo: "To do" };
-    const statusClass = { done: "done", doing: "doing", todo: "todo" };
-
-    function daysUntil(dateStr) {
-      const d = new Date(dateStr);
-      d.setHours(0, 0, 0, 0);
-      return Math.round((d - today) / 86400000);
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
     }
 
     function money(n) {
-      return n.toLocaleString("en-US") + " EGP";
+      return Number(n || 0).toLocaleString(lang === "ar" ? "ar-EG" : "en-US") + " " + t("currency");
     }
 
-    function currentMonthKey() {
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, "0");
-      return y + "-" + m;
+    function sumBy(arr) {
+      return arr.reduce((s, x) => s + Number(x.amount || 0), 0);
     }
 
-    // ===== Render =====
+    function parseDate(s) {
+      const [y, m, d] = String(s).split("-").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function daysUntil(s) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return Math.round((parseDate(s) - today) / 86400000);
+    }
+
+    function statusBadge(s) {
+      const v = s || "todo";
+      return `<span class="badge ${v}">${t("status_" + v)}</span>`;
+    }
+
+    function applyI18n() {
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+      document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+      document.querySelectorAll(".lang-toggle").forEach(b => b.textContent = lang === "ar" ? "English" : "عربي");
+    }
+
+    // ===== Data =====
+    async function loadTable(name) {
+      const { data, error } = await sb.from(SCHEMAS[name].table)
+        .select("*").order("created_at", { ascending: false });
+      if (error) { alert(error.message); return; }
+      cache[name] = data || [];
+    }
+
+    async function loadAll() {
+      await Promise.all(Object.keys(SCHEMAS).map(loadTable));
+    }
+
+    async function refreshAll() {
+      await loadAll();
+      renderAll();
+    }
+
+    // ===== Views =====
+    function renderAll() {
+      renderDashboard();
+      renderList("tasks");
+      renderList("transactions");
+      renderList("projects");
+      showTab(currentTab);
+    }
+
+    function showTab(name) {
+      currentTab = name;
+      document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+      document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== "view-" + name);
+    }
+
     function renderDashboard() {
-      document.getElementById("todayText").textContent =
-        today.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      const el = document.getElementById("view-dashboard");
+      const now = new Date();
+      const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-      renderMonthStats();
-      renderAlerts();
-      renderTasks();
-      renderExpenses();
-      renderChart();
-    }
+      const monthTx = cache.transactions.filter(x => String(x.date).startsWith(monthKey));
+      const income = sumBy(monthTx.filter(x => x.type === "income"));
+      const expense = sumBy(monthTx.filter(x => x.type === "expense"));
+      const subs = sumBy(monthTx.filter(x => x.type === "expense" && /اشتراك|subscri/i.test(x.category || "")));
 
-    function renderMonthStats() {
-      const monthKey = currentMonthKey();
-      const monthTx = transactions.filter(t => t.date.startsWith(monthKey));
-
-      const income = monthTx.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
-      const expense = monthTx.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-      const subs = monthTx.filter(t => t.category === "Subscriptions").reduce((s, t) => s + t.amount, 0);
-
-      document.getElementById("monthStats").innerHTML = `
-        <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">Income</div></div>
-        <div class="stat expense"><div class="num">${money(expense)}</div><div class="lbl">Expenses</div></div>
-        <div class="stat"><div class="num">${money(income - expense)}</div><div class="lbl">Net</div></div>
-        <div class="stat"><div class="num">${money(subs)}</div><div class="lbl">Subscriptions</div></div>
-      `;
-    }
-
-    function renderAlerts() {
-      const items = tasks
-        .filter(t => t.status !== "done" && daysUntil(t.due) <= 2)
-        .map(t => {
-          const d = daysUntil(t.due);
-          const msg = d < 0 ? `Overdue by ${Math.abs(d)} day(s)` : d === 0 ? "Due today" : `${d} day(s) left`;
-          const cls = d < 0 ? "alert" : "warn";
-          return `<li><span>${t.title}</span><span class="badge ${cls}">${msg}</span></li>`;
+      const alerts = cache.tasks
+        .filter(x => x.status !== "done" && x.due_date && daysUntil(x.due_date) <= 2)
+        .map(x => {
+          const d = daysUntil(x.due_date);
+          const msg = d < 0 ? t("overdue", { n: Math.abs(d) }) : d === 0 ? t("dueToday") : t("daysLeft", { n: d });
+          return `<li><span>${esc(x.title)}</span><span class="badge ${d < 0 ? "alert" : "warn"}">${msg}</span></li>`;
         });
 
-      document.getElementById("alerts").innerHTML = items.length
-        ? items.join("")
-        : `<li class="empty">Nothing needs your attention right now</li>`;
-    }
-
-    function renderTasks() {
-      document.getElementById("tasks").innerHTML = tasks.map(t => `
-        <li>
-          <span>${t.title}<div class="muted">Due: ${t.due}</div></span>
-          <span class="badge ${statusClass[t.status]}">${statusLabel[t.status]}</span>
-        </li>
-      `).join("");
-    }
-
-    function renderExpenses() {
-      const expenses = transactions
-        .filter(t => t.type === "expense")
-        .sort((a, b) => b.date.localeCompare(a.date));
-
-      document.getElementById("expenses").innerHTML = expenses.map(e => `
-        <li>
-          <span>${e.category}<div class="muted">${e.date}</div></span>
-          <span>${money(e.amount)}</span>
-        </li>
-      `).join("");
-    }
-
-    function renderChart() {
       const byMonth = {};
-      transactions
-        .filter(t => t.type === "expense")
-        .forEach(e => {
-          const m = e.date.slice(0, 7);
-          byMonth[m] = (byMonth[m] || 0) + e.amount;
-        });
-
+      cache.transactions.filter(x => x.type === "expense").forEach(x => {
+        const m = String(x.date).slice(0, 7);
+        byMonth[m] = (byMonth[m] || 0) + Number(x.amount);
+      });
       const labels = Object.keys(byMonth).sort();
       const values = labels.map(l => byMonth[l]);
 
-      new Chart(document.getElementById("expenseChart"), {
+      el.innerHTML = `
+        <h2 class="section-title">${t("thisMonth")}</h2>
+        <div class="card">
+          <div class="stats">
+            <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">${t("income")}</div></div>
+            <div class="stat expense"><div class="num">${money(expense)}</div><div class="lbl">${t("expenses")}</div></div>
+            <div class="stat"><div class="num">${money(income - expense)}</div><div class="lbl">${t("net")}</div></div>
+            <div class="stat"><div class="num">${money(subs)}</div><div class="lbl">${t("subscriptions")}</div></div>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <h3>${t("attention")}</h3>
+            ${alerts.length ? `<ul class="list">${alerts.join("")}</ul>` : `<p class="empty">${t("nothingAttention")}</p>`}
+          </div>
+          <div class="card">
+            <h3>${t("monthlyChart")}</h3>
+            <div class="chart-box"><canvas id="expenseChart"></canvas></div>
+          </div>
+        </div>`;
+
+      if (chart) chart.destroy();
+      chart = new Chart(document.getElementById("expenseChart"), {
         type: "bar",
         data: {
           labels,
-          datasets: [{
-            label: "Expenses",
-            data: values,
-            backgroundColor: "#764ba2",
-            borderRadius: 8,
-          }],
+          datasets: [{ label: t("expenses"), data: values, backgroundColor: "#764ba2", borderRadius: 8 }],
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } },
       });
     }
 
-    renderDashboard();
+    function rowInfo(name, r) {
+      if (name === "tasks") {
+        return {
+          title: r.title,
+          meta: r.due_date ? `${t("f_due_date")}: ${r.due_date}` : "",
+          right: statusBadge(r.status),
+        };
+      }
+      if (name === "transactions") {
+        return {
+          title: r.category,
+          meta: r.date,
+          right: `<span class="amount ${r.type}">${r.type === "income" ? "+" : "-"} ${money(r.amount)}</span>`,
+        };
+      }
+      return {
+        title: r.name,
+        meta: [r.client, r.due_date].filter(Boolean).join(" · "),
+        right: statusBadge(r.status) + (r.amount ? ` <span class="amount">${money(r.amount)}</span>` : ""),
+      };
+    }
+
+    function renderList(name) {
+      const el = document.getElementById("view-" + name);
+      const rows = cache[name];
+
+      const body = rows.length
+        ? `<ul class="list">${rows.map(r => {
+            const i = rowInfo(name, r);
+            return `
+              <li>
+                <div>
+                  <div class="row-title">${esc(i.title)}</div>
+                  <div class="muted">${esc(i.meta)}</div>
+                </div>
+                <div class="row-side">
+                  ${i.right}
+                  <button class="icon-btn" data-action="edit" data-table="${name}" data-id="${r.id}">✏️</button>
+                  <button class="icon-btn" data-action="delete" data-table="${name}" data-id="${r.id}">🗑️</button>
+                </div>
+              </li>`;
+          }).join("")}</ul>`
+        : `<p class="empty">${t("empty")}</p>`;
+
+      el.innerHTML = `
+        <div class="view-head">
+          <h2>${t(TAB_KEY[name])}</h2>
+          <button class="primary-btn" data-action="add" data-table="${name}">${t("add")}</button>
+        </div>
+        <div class="card">${body}</div>`;
+    }
+
+    // ===== Modal (add / edit) =====
+    function openModal(table, id = null) {
+      const row = id ? (cache[table].find(r => String(r.id) === String(id)) || {}) : {};
+      editing = { table, id };
+
+      document.getElementById("modalTitle").textContent = t(id ? "edit" : "add") + " - " + t(TAB_KEY[table]);
+      document.getElementById("modalFields").innerHTML = SCHEMAS[table].fields.map(f => {
+        const val = row[f.name] ?? "";
+        const label = t("f_" + f.name);
+        let input;
+        if (f.type === "select") {
+          input = `<select name="${f.name}">${f.options.map(o =>
+            `<option value="${o}" ${o === val ? "selected" : ""}>${t(f.optionKey + o)}</option>`).join("")}</select>`;
+        } else {
+          const step = f.type === "number" ? ` step="0.01"` : "";
+          input = `<input name="${f.name}" type="${f.type}" value="${esc(val)}"${step}${f.required ? " required" : ""}>`;
+        }
+        return `<label>${label}${input}</label>`;
+      }).join("");
+
+      document.getElementById("modal").hidden = false;
+    }
+
+    function closeModal() {
+      document.getElementById("modal").hidden = true;
+      editing = null;
+    }
+
+    document.getElementById("modalForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const { table, id } = editing;
+      const payload = {};
+      for (const f of SCHEMAS[table].fields) {
+        const v = e.target.elements[f.name].value;
+        payload[f.name] = v === "" ? null : (f.type === "number" ? Number(v) : v);
+      }
+
+      const req = id
+        ? sb.from(table).update(payload).eq("id", id)
+        : sb.from(table).insert({ ...payload, user_id: user.id });
+
+      const { error } = await req;
+      if (error) { alert(error.message); return; }
+      closeModal();
+      await refreshAll();
+    });
+
+    async function removeRow(table, id) {
+      if (!confirm(t("confirmDelete"))) return;
+      const { error } = await sb.from(table).delete().eq("id", id);
+      if (error) { alert(error.message); return; }
+      await refreshAll();
+    }
+
+    // ===== Login / Logout =====
+    document.getElementById("loginForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        document.getElementById("loginError").textContent = t("loginFailed") + " (" + error.message + ")";
+      }
+    });
+
+    async function logout() {
+      await sb.auth.signOut();
+    }
+
+    async function showApp() {
+      document.getElementById("loginPage").hidden = true;
+      document.getElementById("app").hidden = false;
+      document.getElementById("loginError").textContent = "";
+      showTab(currentTab);
+      await refreshAll();
+    }
+
+    function showLogin() {
+      document.getElementById("app").hidden = true;
+      document.getElementById("loginPage").hidden = false;
+      document.getElementById("password").value = "";
+    }
+
+    // Fires on page load (restores session) and on sign in / sign out
+    sb.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        user = session.user;
+        await showApp();
+      } else {
+        user = null;
+        showLogin();
+      }
+    });
+
+    // ===== Global clicks =====
+    document.addEventListener("click", e => {
+      const el = e.target.closest("[data-action], [data-tab]");
+      if (!el) return;
+
+      if (el.dataset.tab) return showTab(el.dataset.tab);
+
+      switch (el.dataset.action) {
+        case "toggleLang":
+          lang = lang === "ar" ? "en" : "ar";
+          applyI18n();
+          if (user) renderAll();
+          break;
+        case "logout": logout(); break;
+        case "add": openModal(el.dataset.table); break;
+        case "edit": openModal(el.dataset.table, el.dataset.id); break;
+        case "delete": removeRow(el.dataset.table, el.dataset.id); break;
+        case "closeModal": closeModal(); break;
+      }
+    });
+
+    applyI18n();
   </script>
 </body>
 </html>
