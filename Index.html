@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#FAF6EF">
+  <meta name="theme-color" content="#F7F3EC">
   <title>Admin Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,31 +14,31 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg: #FAF6EF;
+      --bg: #F7F3EC;
       --surface: #FFFFFF;
-      --surface-2: #FBF7EF;
-      --ink: #2A2118;
-      --ink-2: #5C4E3D;
-      --muted: #8A7B68;
-      --border: #EEE5D5;
-      --gold: #E7BC5C;
-      --gold-deep: #C9983F;
-      --orange: #DB8A4A;
-      --gold-soft: #FBF1DC;
-      --orange-soft: #F9E8D8;
-      --income: #2F7D4F;
-      --income-soft: #E3F2E8;
-      --expense: #A8443A;
-      --expense-soft: #F8E6E3;
-      --info: #3A62B0;
-      --info-soft: #E4ECF8;
+      --surface-2: #F9F5EE;
+      --ink: #2E251C;
+      --ink-2: #63554A;
+      --muted: #8E8072;
+      --border: #E9E1D3;
+      --gold: #D9B26A;
+      --gold-deep: #B8924E;
+      --orange: #C98A5C;
+      --gold-soft: #F5EEDC;
+      --orange-soft: #F2E6DA;
+      --income: #3B7456;
+      --income-soft: #E6EFE9;
+      --expense: #9A4B42;
+      --expense-soft: #F3E6E3;
+      --info: #4B6494;
+      --info-soft: #E6EBF3;
       --radius-lg: 20px;
       --radius-md: 14px;
       --radius-sm: 10px;
-      --shadow-sm: 0 1px 2px rgba(42,33,24,.05);
-      --shadow-md: 0 8px 24px rgba(42,33,24,.07);
-      --shadow-fab: 0 10px 26px rgba(201,152,63,.30);
-      --ring: 0 0 0 3px rgba(231,188,92,.30);
+      --shadow-sm: 0 1px 2px rgba(46,37,28,.04);
+      --shadow-md: 0 8px 24px rgba(46,37,28,.06);
+      --shadow-fab: 0 10px 24px rgba(184,146,78,.22);
+      --ring: 0 0 0 3px rgba(217,178,106,.28);
     }
 
     * { box-sizing: border-box; }
@@ -76,9 +76,9 @@
       color: var(--ink);
       border: none; border-radius: var(--radius-md);
       padding: 10px 20px; font-weight: 700; font-size: 15px;
-      box-shadow: 0 4px 12px rgba(201,152,63,.20);
+      box-shadow: 0 4px 10px rgba(184,146,78,.15);
     }
-    .btn-primary:hover { box-shadow: 0 6px 16px rgba(201,152,63,.28); }
+    .btn-primary:hover { box-shadow: 0 6px 14px rgba(184,146,78,.22); }
     .btn-ghost {
       background: var(--surface); color: var(--ink-2);
       border: 1px solid var(--border); border-radius: var(--radius-md);
@@ -98,9 +98,9 @@
     .login-wrap {
       min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
       background:
-        radial-gradient(circle at 15% 20%, rgba(231,188,92,.30), transparent 45%),
-        radial-gradient(circle at 85% 80%, rgba(219,138,74,.25), transparent 45%),
-        linear-gradient(160deg, #FBF3E2, #F8E9DA);
+        radial-gradient(circle at 15% 20%, rgba(217,178,106,.18), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(201,138,92,.14), transparent 45%),
+        linear-gradient(160deg, #F7F0E1, #F3E9DF);
     }
     .login-card {
       background: var(--surface); width: 100%; max-width: 400px;
@@ -131,7 +131,7 @@
 
     /* ===== Top bar ===== */
     .topbar {
-      background: #2A2118; color: #FBF3E2;
+      background: #3A3026; color: #F5EEDF;
       padding: calc(16px + env(safe-area-inset-top, 0px)) 24px 16px;
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
       position: sticky; top: 0; z-index: 6;
@@ -146,8 +146,8 @@
       display: inline-flex; align-items: center; justify-content: center; color: var(--ink); font-size: 15px; font-weight: 800;
     }
     .top-actions { display: flex; gap: 8px; }
-    .top-actions .btn-ghost { background: rgba(255,255,255,.08); color: #FBF3E2; border-color: rgba(255,255,255,.15); }
-    .top-actions .btn-ghost:hover { background: rgba(255,255,255,.16); }
+    .top-actions .btn-ghost { background: rgba(255,255,255,.07); color: #F5EEDF; border-color: rgba(255,255,255,.12); }
+    .top-actions .btn-ghost:hover { background: rgba(255,255,255,.14); }
 
     /* ===== Tabs ===== */
     .tabs {
@@ -160,7 +160,7 @@
       padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap;
     }
     .tab:hover { background: var(--surface-2); color: var(--ink); }
-    .tab.active { background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); box-shadow: 0 4px 10px rgba(201,152,63,.18); }
+    .tab.active { background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); box-shadow: 0 3px 8px rgba(184,146,78,.14); }
 
     /* ===== Layout ===== */
     main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 120px; }
@@ -205,11 +205,11 @@
     .empty { color: var(--muted); text-align: center; padding: 24px 0; margin: 0; }
 
     .badge { font-size: 12px; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; display: inline-block; }
-    .done  { background: var(--income-soft); color: #2A6B45; }
-    .doing { background: var(--info-soft); color: #33559A; }
-    .todo  { background: #F2EFE9; color: var(--ink-2); }
-    .alert { background: var(--expense-soft); color: #8A3A31; }
-    .warn  { background: var(--gold-soft); color: #7A5A1E; }
+    .done  { background: var(--income-soft); color: #2F5E44; }
+    .doing { background: var(--info-soft); color: #3D5680; }
+    .todo  { background: #F1EEE8; color: var(--ink-2); }
+    .alert { background: var(--expense-soft); color: #7E3B34; }
+    .warn  { background: var(--gold-soft); color: #6E5528; }
 
     .chart-box { position: relative; height: 260px; }
 
@@ -221,9 +221,9 @@
       box-shadow: var(--shadow-fab);
       display: inline-flex; align-items: center; justify-content: center; color: var(--ink);
     }
-    .nono-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(201,152,63,.36); }
+    .nono-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(184,146,78,.28); }
     .nono-fab svg { width: 26px; height: 26px; }
-    .nono-fab.open { background: var(--ink); color: #FBF3E2; }
+    .nono-fab.open { background: #3A3026; color: #F5EEDF; }
 
     .nono-panel {
       position: fixed; left: 20px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 15;
@@ -240,7 +240,7 @@
     }
     .nono-head .title { font-weight: 800; font-size: 16px; }
     .nono-close {
-      background: rgba(255,255,255,.75); border: none; border-radius: 10px; width: 32px; height: 32px;
+      background: rgba(255,255,255,.7); border: none; border-radius: 10px; width: 32px; height: 32px;
       display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 18px; line-height: 1;
     }
     .nono-close:hover { background: #fff; }
@@ -261,7 +261,7 @@
 
     /* ===== Modal ===== */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(42,33,24,.40); backdrop-filter: blur(3px);
+      position: fixed; inset: 0; background: rgba(46,37,28,.35); backdrop-filter: blur(3px);
       display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 20;
     }
     .modal {
@@ -615,8 +615,8 @@
             backgroundColor: (ctx) => {
               const { chart: c } = ctx;
               const g = c.ctx.createLinearGradient(0, 0, 0, c.height);
-              g.addColorStop(0, "#E7BC5C");
-              g.addColorStop(1, "#DB8A4A");
+              g.addColorStop(0, "#D9B26A");
+              g.addColorStop(1, "#C98A5C");
               return g;
             },
             borderRadius: 10,
@@ -628,8 +628,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false }, ticks: { color: "#8A7B68" } },
-            y: { grid: { color: "#EEE5D5" }, ticks: { color: "#8A7B68" }, beginAtZero: true },
+            x: { grid: { display: false }, ticks: { color: "#8E8072" } },
+            y: { grid: { color: "#E9E1D3" }, ticks: { color: "#8E8072" }, beginAtZero: true },
           },
         },
       });
