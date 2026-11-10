@@ -104,6 +104,12 @@
 
     .chart-box { position: relative; height: 260px; }
 
+    /* ===== Chat (Nono) ===== */
+    .chat-log { min-height: 200px; max-height: 400px; overflow-y: auto; margin-bottom: 12px; white-space: pre-wrap; }
+    .chat-log p { margin: 8px 0; }
+    .chat-form { display: flex; gap: 8px; }
+    .chat-form input { margin-top: 0; }
+
     /* ===== Modal ===== */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.4);
@@ -151,6 +157,7 @@
       <button class="tab" data-tab="tasks" data-i18n="tabTasks"></button>
       <button class="tab" data-tab="transactions" data-i18n="tabTransactions"></button>
       <button class="tab" data-tab="projects" data-i18n="tabProjects"></button>
+      <button class="tab" data-tab="assistant" data-i18n="tabAssistant"></button>
     </nav>
 
     <main>
@@ -158,6 +165,7 @@
       <section id="view-tasks" class="view" hidden></section>
       <section id="view-transactions" class="view" hidden></section>
       <section id="view-projects" class="view" hidden></section>
+      <section id="view-assistant" class="view" hidden></section>
     </main>
 
     <!-- Add / Edit modal -->
@@ -178,6 +186,7 @@
     const SUPABASE_URL = "https://tjijgrysaeljfzwkgbpa.supabase.co";
     const SUPABASE_KEY = "sb_publishable_6xZmYA_CVRbTsn-ieN332Q_nmesQx5o";
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const ASSISTANT_URL = "https://tjijgrysaeljfzwkgbpa.supabase.co/functions/v1/rapid-service";
 
     // ===== Translations =====
     const T = {
@@ -186,6 +195,7 @@
         email: "الإيميل", password: "الباسورد", login: "دخول", logout: "تسجيل خروج",
         loginFailed: "الإيميل أو الباسورد غلط",
         tabDashboard: "الرئيسية", tabTasks: "المهام", tabTransactions: "المصروفات", tabProjects: "المشاريع",
+        tabAssistant: "نونو 🤖",
         thisMonth: "الشهر ده", income: "دخل", expenses: "مصروف", net: "صافي", subscriptions: "اشتراكات",
         attention: "🔔 محتاج انتباهك", nothingAttention: "مفيش حاجة محتاجة انتباهك دلوقتي 👍",
         overdue: "متأخرة {n} يوم", dueToday: "موعدها النهارده", daysLeft: "باقي {n} يوم",
@@ -197,12 +207,14 @@
         f_title: "العنوان", f_status: "الحالة", f_due_date: "الموعد", f_date: "التاريخ",
         f_type: "النوع", f_category: "التصنيف", f_amount: "المبلغ", f_name: "اسم المشروع", f_client: "العميل",
         empty: "مفيش بيانات لسه", currency: "ج.م",
+        chatPlaceholder: "اسألني عن أي حاجة في الداتا...", chatSend: "ابعت", chatYou: "إنت", chatBot: "نونو",
       },
       en: {
         appTitle: "Admin Dashboard", loginSub: "Sign in to see your dashboard",
         email: "Email", password: "Password", login: "Sign in", logout: "Sign out",
         loginFailed: "Wrong email or password",
         tabDashboard: "Dashboard", tabTasks: "Tasks", tabTransactions: "Expenses", tabProjects: "Projects",
+        tabAssistant: "Nono 🤖",
         thisMonth: "This month", income: "Income", expenses: "Expenses", net: "Net", subscriptions: "Subscriptions",
         attention: "🔔 Needs your attention", nothingAttention: "Nothing needs your attention right now 👍",
         overdue: "Overdue by {n} day(s)", dueToday: "Due today", daysLeft: "{n} day(s) left",
@@ -214,10 +226,11 @@
         f_title: "Title", f_status: "Status", f_due_date: "Due date", f_date: "Date",
         f_type: "Type", f_category: "Category", f_amount: "Amount", f_name: "Project name", f_client: "Client",
         empty: "No data yet", currency: "EGP",
+        chatPlaceholder: "Ask me anything about your data...", chatSend: "Send", chatYou: "You", chatBot: "Nono",
       },
     };
 
-    const TAB_KEY = { dashboard: "tabDashboard", tasks: "tabTasks", transactions: "tabTransactions", projects: "tabProjects" };
+    const TAB_KEY = { dashboard: "tabDashboard", tasks: "tabTasks", transactions: "tabTransactions", projects: "tabProjects", assistant: "tabAssistant" };
 
     // ===== Table schemas: edit these to change fields =====
     const SCHEMAS = {
@@ -324,6 +337,7 @@
       renderList("tasks");
       renderList("transactions");
       renderList("projects");
+      renderAssistant();
       showTab(currentTab);
     }
 
@@ -441,6 +455,51 @@
           <button class="primary-btn" data-action="add" data-table="${name}">${t("add")}</button>
         </div>
         <div class="card">${body}</div>`;
+    }
+
+    // ===== Nono (assistant) =====
+    function renderAssistant() {
+      const el = document.getElementById("view-assistant");
+      const prevLog = document.getElementById("chatLog")?.innerHTML || "";
+      el.innerHTML = `
+        <div class="view-head"><h2>${t("tabAssistant")}</h2></div>
+        <div class="card">
+          <div class="chat-log" id="chatLog">${prevLog}</div>
+          <form class="chat-form" id="chatForm">
+            <input id="chatInput" placeholder="${t("chatPlaceholder")}">
+            <button class="primary-btn" type="submit">${t("chatSend")}</button>
+          </form>
+        </div>`;
+      document.getElementById("chatForm").addEventListener("submit", sendToNono);
+    }
+
+    async function sendToNono(e) {
+      e.preventDefault();
+      const input = document.getElementById("chatInput");
+      const log = document.getElementById("chatLog");
+      const message = input.value.trim();
+      if (!message) return;
+      input.value = "";
+      log.insertAdjacentHTML("beforeend", `<p><b>${t("chatYou")}:</b> ${esc(message)}</p>`);
+      log.scrollTop = log.scrollHeight;
+
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        const res = await fetch(ASSISTANT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": SUPABASE_KEY,
+          },
+          body: JSON.stringify({ message }),
+        });
+        const json = await res.json();
+        log.insertAdjacentHTML("beforeend", `<p><b>${t("chatBot")}:</b> ${esc(json.reply || json.error || "No response")}</p>`);
+      } catch (err) {
+        log.insertAdjacentHTML("beforeend", `<p><b>${t("chatBot")}:</b> ${esc(String(err))}</p>`);
+      }
+      log.scrollTop = log.scrollHeight;
     }
 
     // ===== Modal (add / edit) =====
