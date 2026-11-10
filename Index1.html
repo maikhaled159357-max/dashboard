@@ -127,6 +127,7 @@
       font-size: 15px;
     }
     input:focus, select:focus { border-color: var(--gold-deep); }
+    .sr-only-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 
     /* ===== Top bar ===== */
     .topbar {
@@ -254,7 +255,7 @@
     .bubble.you { align-self: flex-end; background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); border-bottom-inline-end-radius: 6px; }
     .bubble.bot { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); border-bottom-inline-start-radius: 6px; }
     .bubble.pending { opacity: .6; }
-    .chat-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+    .chat-form { position: relative; display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
     .chat-form input { margin-top: 0; }
     .chat-form .btn-primary { flex-shrink: 0; }
 
@@ -395,7 +396,7 @@
         f_type: "النوع", f_category: "التصنيف", f_amount: "المبلغ", f_name: "اسم المشروع", f_client: "العميل",
         empty: "مفيش بيانات لسه", currency: "ج.م",
         nonoTitle: "نونو 🤖", nonoOpen: "فتح نونو", close: "إغلاق",
-        chatPlaceholder: "اسألني عن مصروف أو مهمة أو مشروع…", chatSend: "ابعت", chatYou: "إنت", chatBot: "نونو",
+        chatPlaceholder: "أقدر أساعدك إزاي؟", chatSend: "ابعت", chatYou: "إنت", chatBot: "نونو",
         chatGreeting: `هاي ${USER_NAME} 👋 أقدر أساعدك في مصروفاتك ومهامك ومشاريعك. اسألني أي حاجة.`,
         chatThinking: "نونو بيفكر…",
       },
@@ -416,7 +417,7 @@
         f_type: "Type", f_category: "Category", f_amount: "Amount", f_name: "Project name", f_client: "Client",
         empty: "No data yet", currency: "EGP",
         nonoTitle: "Nono 🤖", nonoOpen: "Open Nono", close: "Close",
-        chatPlaceholder: "Ask about an expense, task or project…", chatSend: "Send", chatYou: "You", chatBot: "Nono",
+        chatPlaceholder: "How can I help?", chatSend: "Send", chatYou: "You", chatBot: "Nono",
         chatGreeting: `Hi ${USER_NAME} 👋 I can help with your expenses, tasks and projects. Ask me anything.`,
         chatThinking: "Nono is thinking…",
       },
