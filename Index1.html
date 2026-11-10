@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - لوحة المتابعة</title>
+  <title>Admin Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -14,54 +13,6 @@
       background: #f3f4f8;
       color: #222;
     }
-
-    /* ===== صفحة الدخول ===== */
-    #loginPage {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      padding: 20px;
-    }
-    .login-card {
-      background: #fff;
-      width: 100%;
-      max-width: 380px;
-      padding: 35px 28px;
-      border-radius: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    }
-    .login-card h1 { margin: 0 0 6px; font-size: 24px; text-align: center; }
-    .login-card p.sub { margin: 0 0 22px; color: #777; text-align: center; font-size: 14px; }
-    .login-card label { display: block; margin: 12px 0 6px; font-size: 14px; color: #444; }
-    .login-card input {
-      width: 100%;
-      padding: 12px 14px;
-      border: 2px solid #e0e0f0;
-      border-radius: 12px;
-      font-size: 15px;
-      font-family: inherit;
-      outline: none;
-    }
-    .login-card input:focus { border-color: #764ba2; }
-    .login-card button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(90deg, #667eea, #764ba2);
-      color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      font-family: inherit;
-      cursor: pointer;
-    }
-    .login-error { color: #dc2626; text-align: center; margin-top: 12px; font-size: 14px; min-height: 20px; }
-
-    /* ===== الداشبورد ===== */
-    #dashboard { display: none; }
     header {
       background: linear-gradient(90deg, #667eea, #764ba2);
       color: #fff;
@@ -69,18 +20,6 @@
     }
     header .hello { font-size: 22px; font-weight: 700; margin: 0; }
     header .date { font-size: 14px; opacity: 0.9; margin-top: 4px; }
-    header .logout {
-      margin-top: 10px;
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-family: inherit;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
     main {
       padding: 20px;
       display: grid;
@@ -97,19 +36,12 @@
     }
     .card h2 { margin: 0 0 14px; font-size: 17px; color: #764ba2; }
     .full { grid-column: 1 / -1; }
-
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-    .stat {
-      background: #f7f5ff;
-      border-radius: 12px;
-      padding: 14px;
-      text-align: center;
-    }
+    .stat { background: #f7f5ff; border-radius: 12px; padding: 14px; text-align: center; }
     .stat .num { font-size: 20px; font-weight: 700; color: #764ba2; }
     .stat .lbl { font-size: 13px; color: #666; margin-top: 4px; }
     .stat.income .num { color: #16a34a; }
     .stat.expense .num { color: #dc2626; }
-
     ul { list-style: none; padding: 0; margin: 0; }
     li {
       padding: 11px 4px;
@@ -121,103 +53,75 @@
     }
     li:last-child { border-bottom: none; }
     .muted { color: #888; font-size: 13px; margin-top: 3px; }
-
     .badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .done  { background: #dcfce7; color: #166534; }
     .doing { background: #dbeafe; color: #1e40af; }
     .todo  { background: #f3f4f6; color: #374151; }
     .alert { background: #fee2e2; color: #991b1b; }
     .warn  { background: #fef3c7; color: #92400e; }
-
     .chart-box { position: relative; height: 260px; }
     .empty { color: #888; text-align: center; padding: 14px 0; }
   </style>
 </head>
 <body>
 
-  <!-- ===== صفحة الدخول ===== -->
-  <div id="loginPage">
-    <form class="login-card" onsubmit="handleLogin(event)">
-      <h1>Admin</h1>
-      <p class="sub">سجّل دخولك عشان تشوف لوحتك</p>
+  <header>
+    <p class="hello">Good morning, Admin</p>
+    <p class="date" id="todayText"></p>
+  </header>
 
-      <label for="email">الإيميل</label>
-      <input type="email" id="email" required autocomplete="username">
+  <main>
+    <section class="card full">
+      <h2>This Month</h2>
+      <div class="stats" id="monthStats"></div>
+    </section>
 
-      <label for="password">الباسورد</label>
-      <input type="password" id="password" required autocomplete="current-password">
+    <section class="card">
+      <h2>Needs your attention</h2>
+      <ul id="alerts"></ul>
+    </section>
 
-      <button type="submit">دخول</button>
-      <div class="login-error" id="loginError"></div>
-    </form>
-  </div>
+    <section class="card">
+      <h2>My tasks</h2>
+      <ul id="tasks"></ul>
+    </section>
 
-  <!-- ===== الداشبورد ===== -->
-  <div id="dashboard">
-    <header>
-      <p class="hello">صباح الخير يا Admin 👋</p>
-      <p class="date" id="todayText"></p>
-      <button class="logout" onclick="logout()">تسجيل خروج</button>
-    </header>
+    <section class="card">
+      <h2>Monthly expenses</h2>
+      <div class="chart-box"><canvas id="expenseChart"></canvas></div>
+    </section>
 
-    <main>
-      <section class="card full">
-        <h2>الشهر ده</h2>
-        <div class="stats" id="monthStats"></div>
-      </section>
-
-      <section class="card">
-        <h2>🔔 محتاج انتباهك</h2>
-        <ul id="alerts"></ul>
-      </section>
-
-      <section class="card">
-        <h2>📋 مهامي</h2>
-        <ul id="tasks"></ul>
-      </section>
-
-      <section class="card">
-        <h2>💸 المصروفات الشهرية</h2>
-        <div class="chart-box"><canvas id="expenseChart"></canvas></div>
-      </section>
-
-      <section class="card">
-        <h2>🧾 تفاصيل المصروفات</h2>
-        <ul id="expenses"></ul>
-      </section>
-    </main>
-  </div>
+    <section class="card">
+      <h2>Expense details</h2>
+      <ul id="expenses"></ul>
+    </section>
+  </main>
 
   <script>
-    // ===== Supabase =====
-    const supabase = window.supabase.createClient(
-      "https://tjijgrysaeljfzwkgbpa.supabase.co",
-      "sb_publishable_6xZmYA_CVRbTsn-ieN332Q_nmesQx5o"
-    );
-
-    // ===== بيانات تجريبية: هنستبدلها ببيانات حقيقية لاحقاً =====
+    // ===== Sample data: replace with real data later =====
     const tasks = [
-      { id: 1, title: "تسليم تقرير المبيعات",   status: "doing", due: "2026-11-10" },
-      { id: 2, title: "مراجعة عقد العميل",       status: "todo",  due: "2026-11-12" },
-      { id: 3, title: "إعداد فاتورة شهر أكتوبر", status: "done",  due: "2026-11-05" },
-      { id: 4, title: "تحديث الموقع",            status: "todo",  due: "2026-11-08" },
+      { id: 1, title: "Send sales report",     status: "doing", due: "2026-11-10" },
+      { id: 2, title: "Review client contract", status: "todo",  due: "2026-11-12" },
+      { id: 3, title: "Prepare October invoice", status: "done", due: "2026-11-05" },
+      { id: 4, title: "Update website",          status: "todo",  due: "2026-11-08" },
     ];
 
     const transactions = [
-      { date: "2026-10-03", type: "expense", category: "إيجار",    amount: 3500 },
-      { date: "2026-10-10", type: "expense", category: "إنترنت",   amount: 400 },
-      { date: "2026-10-15", type: "income",  category: "عميل",     amount: 5000 },
-      { date: "2026-10-22", type: "expense", category: "مواصلات",  amount: 600 },
-      { date: "2026-11-02", type: "expense", category: "إيجار",    amount: 3500 },
-      { date: "2026-11-06", type: "income",  category: "عميل",     amount: 2200 },
-      { date: "2026-11-06", type: "expense", category: "طعام",     amount: 900 },
-      { date: "2026-11-08", type: "expense", category: "اشتراكات", amount: 750 },
+      { date: "2026-10-03", type: "expense", category: "Rent",          amount: 3500 },
+      { date: "2026-10-10", type: "expense", category: "Internet",      amount: 400 },
+      { date: "2026-10-15", type: "income",  category: "Client",        amount: 5000 },
+      { date: "2026-10-22", type: "expense", category: "Transport",     amount: 600 },
+      { date: "2026-11-02", type: "expense", category: "Rent",          amount: 3500 },
+      { date: "2026-11-06", type: "income",  category: "Client",        amount: 2200 },
+      { date: "2026-11-06", type: "expense", category: "Food",          amount: 900 },
+      { date: "2026-11-08", type: "expense", category: "Subscriptions", amount: 750 },
     ];
 
-    // ===== أدوات مساعدة =====
+    // ===== Helpers =====
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const statusLabel = { done: "مكتمل", doing: "جاري", todo: "لسه" };
+
+    const statusLabel = { done: "Done", doing: "In progress", todo: "To do" };
     const statusClass = { done: "done", doing: "doing", todo: "todo" };
 
     function daysUntil(dateStr) {
@@ -227,49 +131,19 @@
     }
 
     function money(n) {
-      return n.toLocaleString("ar-EG") + " ج.م";
+      return n.toLocaleString("en-US") + " EGP";
     }
 
-    // ===== الدخول والخروج =====
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (error) {
-        document.getElementById("loginError").textContent = "الإيميل أو الباسورد غلط";
-        return;
-      }
-
-      showDashboard();
+    function currentMonthKey() {
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, "0");
+      return y + "-" + m;
     }
 
-    async function logout() {
-      await supabase.auth.signOut();
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("loginPage").style.display = "flex";
-      document.getElementById("password").value = "";
-    }
-
-    function showDashboard() {
-      document.getElementById("loginPage").style.display = "none";
-      document.getElementById("dashboard").style.display = "block";
-      document.getElementById("loginError").textContent = "";
-      renderDashboard();
-    }
-
-    // لو الجلسة موجودة من قبل، يدخل على طول
-    async function checkSession() {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) showDashboard();
-    }
-
-    // ===== الرسم =====
+    // ===== Render =====
     function renderDashboard() {
       document.getElementById("todayText").textContent =
-        today.toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        today.toLocaleDateString("en-US", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
       renderMonthStats();
       renderAlerts();
@@ -279,41 +153,40 @@
     }
 
     function renderMonthStats() {
-      const monthKey = today.toISOString().slice(0, 7);
+      const monthKey = currentMonthKey();
       const monthTx = transactions.filter(t => t.date.startsWith(monthKey));
 
       const income = monthTx.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
       const expense = monthTx.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-      const subs = monthTx.filter(t => t.category === "اشتراكات").reduce((s, t) => s + t.amount, 0);
+      const subs = monthTx.filter(t => t.category === "Subscriptions").reduce((s, t) => s + t.amount, 0);
 
       document.getElementById("monthStats").innerHTML = `
-        <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">دخل</div></div>
-        <div class="stat expense"><div class="num">${money(expense)}</div><div class="lbl">مصروف</div></div>
-        <div class="stat"><div class="num">${money(income - expense)}</div><div class="lbl">صافي</div></div>
-        <div class="stat"><div class="num">${money(subs)}</div><div class="lbl">اشتراكات شهرية</div></div>
+        <div class="stat income"><div class="num">${money(income)}</div><div class="lbl">Income</div></div>
+        <div class="stat expense"><div class="num">${money(expense)}</div><div class="lbl">Expenses</div></div>
+        <div class="stat"><div class="num">${money(income - expense)}</div><div class="lbl">Net</div></div>
+        <div class="stat"><div class="num">${money(subs)}</div><div class="lbl">Subscriptions</div></div>
       `;
     }
 
     function renderAlerts() {
-      const list = document.getElementById("alerts");
       const items = tasks
         .filter(t => t.status !== "done" && daysUntil(t.due) <= 2)
         .map(t => {
           const d = daysUntil(t.due);
-          const msg = d < 0 ? `متأخرة ${Math.abs(d)} يوم` : d === 0 ? "موعدها النهارده" : `باقي ${d} يوم`;
+          const msg = d < 0 ? `Overdue by ${Math.abs(d)} day(s)` : d === 0 ? "Due today" : `${d} day(s) left`;
           const cls = d < 0 ? "alert" : "warn";
           return `<li><span>${t.title}</span><span class="badge ${cls}">${msg}</span></li>`;
         });
 
-      list.innerHTML = items.length
+      document.getElementById("alerts").innerHTML = items.length
         ? items.join("")
-        : `<li class="empty">مفيش حاجة محتاجة انتباهك دلوقتي 👍</li>`;
+        : `<li class="empty">Nothing needs your attention right now</li>`;
     }
 
     function renderTasks() {
       document.getElementById("tasks").innerHTML = tasks.map(t => `
         <li>
-          <span>${t.title}<div class="muted">الموعد: ${t.due}</div></span>
+          <span>${t.title}<div class="muted">Due: ${t.due}</div></span>
           <span class="badge ${statusClass[t.status]}">${statusLabel[t.status]}</span>
         </li>
       `).join("");
@@ -349,7 +222,7 @@
         data: {
           labels,
           datasets: [{
-            label: "المصروفات",
+            label: "Expenses",
             data: values,
             backgroundColor: "#764ba2",
             borderRadius: 8,
@@ -363,7 +236,7 @@
       });
     }
 
-    checkSession();
+    renderDashboard();
   </script>
 </body>
 </html>
