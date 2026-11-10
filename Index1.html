@@ -724,6 +724,7 @@
       renderChat();
 
       let reply;
+      let changed = false;
       try {
         const { data: { session } } = await sb.auth.getSession();
         const res = await fetch(ASSISTANT_URL, {
@@ -737,6 +738,7 @@
         });
         const json = await res.json();
         reply = json.reply || json.error || "No response";
+        changed = Boolean(json.changed);
       } catch (err) {
         reply = String(err);
       }
@@ -744,6 +746,9 @@
       chatMessages.pop(); // remove the "thinking" placeholder
       chatMessages.push({ who: "bot", text: reply });
       renderChat();
+
+      // If Nono added records, reload the data so the dashboard updates
+      if (changed) await refreshAll();
     }
 
     // ===== Modal (add / edit) =====
