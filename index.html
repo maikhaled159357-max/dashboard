@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -13,7 +13,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
+    /* ===== Light (Morning) ===== */
+    :root, :root[data-theme="light"] {
       --bg: #F7F3EC;
       --surface: #FFFFFF;
       --surface-2: #F9F5EE;
@@ -32,13 +33,70 @@
       --expense-soft: #F3E6E3;
       --info: #4B6494;
       --info-soft: #E6EBF3;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --radius-sm: 10px;
+      --topbar: #3A3026;
+      --topbar-ink: #F5EEDF;
+      --chart-grid: #E9E1D3;
       --shadow-sm: 0 1px 2px rgba(46,37,28,.04);
       --shadow-md: 0 8px 24px rgba(46,37,28,.06);
       --shadow-fab: 0 10px 24px rgba(184,146,78,.22);
       --ring: 0 0 0 3px rgba(217,178,106,.28);
+      --backdrop: rgba(46,37,28,.35);
+      --login-bg-1: #F7F0E1;
+      --login-bg-2: #F3E9DF;
+      color-scheme: light;
+    }
+
+    /* ===== Dark (Night) ===== */
+    :root[data-theme="dark"] {
+      --bg: #17130F;
+      --surface: #221C16;
+      --surface-2: #2A231B;
+      --ink: #F3EBDD;
+      --ink-2: #CDBFA9;
+      --muted: #9C8E7C;
+      --border: #3A3026;
+      --gold: #D9B26A;
+      --gold-deep: #E0B872;
+      --orange: #C98A5C;
+      --gold-soft: #3A2F1D;
+      --orange-soft: #3A2A1F;
+      --income: #7FB893;
+      --income-soft: #1E2E24;
+      --expense: #D08A80;
+      --expense-soft: #3A2421;
+      --info: #8FA6D6;
+      --info-soft: #1E2433;
+      --topbar: #0F0C09;
+      --topbar-ink: #F3EBDD;
+      --chart-grid: #3A3026;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+      --shadow-md: 0 8px 24px rgba(0,0,0,.45);
+      --shadow-fab: 0 10px 24px rgba(0,0,0,.5);
+      --ring: 0 0 0 3px rgba(217,178,106,.32);
+      --backdrop: rgba(0,0,0,.6);
+      --login-bg-1: #1C1712;
+      --login-bg-2: #15110D;
+      color-scheme: dark;
+    }
+
+    /* Follow the device setting when the user has not picked one */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #17130F; --surface: #221C16; --surface-2: #2A231B;
+        --ink: #F3EBDD; --ink-2: #CDBFA9; --muted: #9C8E7C; --border: #3A3026;
+        --gold-soft: #3A2F1D; --orange-soft: #3A2A1F;
+        --income: #7FB893; --income-soft: #1E2E24;
+        --expense: #D08A80; --expense-soft: #3A2421;
+        --info: #8FA6D6; --info-soft: #1E2433;
+        --topbar: #0F0C09; --topbar-ink: #F3EBDD;
+        --chart-grid: #3A3026;
+        --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+        --shadow-md: 0 8px 24px rgba(0,0,0,.45);
+        --shadow-fab: 0 10px 24px rgba(0,0,0,.5);
+        --backdrop: rgba(0,0,0,.6);
+        --login-bg-1: #1C1712; --login-bg-2: #15110D;
+        color-scheme: dark;
+      }
     }
 
     * { box-sizing: border-box; }
@@ -50,6 +108,7 @@
       color: var(--ink);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
+      transition: background .25s, color .25s;
     }
     h1, h2, h3 { text-wrap: balance; }
 
@@ -73,21 +132,21 @@
     /* ===== Buttons ===== */
     .btn-primary {
       background: linear-gradient(135deg, var(--gold), var(--orange));
-      color: var(--ink);
-      border: none; border-radius: var(--radius-md);
+      color: #2E251C;
+      border: none; border-radius: var(--radius-md, 14px);
       padding: 10px 20px; font-weight: 700; font-size: 15px;
       box-shadow: 0 4px 10px rgba(184,146,78,.15);
     }
     .btn-primary:hover { box-shadow: 0 6px 14px rgba(184,146,78,.22); }
     .btn-ghost {
       background: var(--surface); color: var(--ink-2);
-      border: 1px solid var(--border); border-radius: var(--radius-md);
+      border: 1px solid var(--border); border-radius: 14px;
       padding: 8px 16px; font-weight: 600; font-size: 14px;
     }
     .btn-ghost:hover { background: var(--surface-2); }
     .btn-icon {
       background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); width: 34px; height: 34px;
+      border-radius: 10px; width: 34px; height: 34px;
       display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2);
     }
     .btn-icon:hover { background: var(--gold-soft); color: var(--ink); }
@@ -100,17 +159,17 @@
       background:
         radial-gradient(circle at 15% 20%, rgba(217,178,106,.18), transparent 45%),
         radial-gradient(circle at 85% 80%, rgba(201,138,92,.14), transparent 45%),
-        linear-gradient(160deg, #F7F0E1, #F3E9DF);
+        linear-gradient(160deg, var(--login-bg-1), var(--login-bg-2));
     }
     .login-card {
       background: var(--surface); width: 100%; max-width: 400px;
       padding: 34px 28px; border-radius: 24px; box-shadow: var(--shadow-md);
-      border: 1px solid rgba(255,255,255,.7);
+      border: 1px solid var(--border);
     }
     .login-mark {
       width: 56px; height: 56px; border-radius: 16px; margin: 0 auto 14px;
       background: linear-gradient(135deg, var(--gold), var(--orange));
-      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: var(--ink);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: #2E251C;
     }
     .login-card h1 { margin: 0 0 4px; font-size: 24px; font-weight: 800; text-align: center; }
     .login-card .sub { margin: 0 0 22px; color: var(--muted); text-align: center; font-size: 14px; }
@@ -123,7 +182,7 @@
     input, select {
       width: 100%; margin-top: 6px; padding: 11px 14px;
       background: var(--surface); color: var(--ink);
-      border: 1.5px solid var(--border); border-radius: var(--radius-md);
+      border: 1.5px solid var(--border); border-radius: 14px;
       font-size: 15px;
     }
     input:focus, select:focus { border-color: var(--gold-deep); }
@@ -131,7 +190,7 @@
 
     /* ===== Top bar ===== */
     .topbar {
-      background: #3A3026; color: #F5EEDF;
+      background: var(--topbar); color: var(--topbar-ink);
       padding: calc(16px + env(safe-area-inset-top, 0px)) 24px 16px;
       display: flex; justify-content: space-between; align-items: center; gap: 12px;
       position: sticky; top: 0; z-index: 6;
@@ -143,11 +202,18 @@
     .brand-mark {
       width: 34px; height: 34px; border-radius: 10px;
       background: linear-gradient(135deg, var(--gold), var(--orange));
-      display: inline-flex; align-items: center; justify-content: center; color: var(--ink); font-size: 15px; font-weight: 800;
+      display: inline-flex; align-items: center; justify-content: center; color: #2E251C; font-size: 15px; font-weight: 800;
     }
-    .top-actions { display: flex; gap: 8px; }
-    .top-actions .btn-ghost { background: rgba(255,255,255,.07); color: #F5EEDF; border-color: rgba(255,255,255,.12); }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .top-actions .btn-ghost { background: rgba(255,255,255,.07); color: var(--topbar-ink); border-color: rgba(255,255,255,.12); }
     .top-actions .btn-ghost:hover { background: rgba(255,255,255,.14); }
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 50%; padding: 0;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: var(--topbar-ink);
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .theme-toggle:hover { background: rgba(255,255,255,.14); }
+    .theme-toggle svg { width: 18px; height: 18px; }
 
     /* ===== Tabs ===== */
     .tabs {
@@ -160,7 +226,7 @@
       padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; white-space: nowrap;
     }
     .tab:hover { background: var(--surface-2); color: var(--ink); }
-    .tab.active { background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); box-shadow: 0 3px 8px rgba(184,146,78,.14); }
+    .tab.active { background: linear-gradient(135deg, var(--gold), var(--orange)); color: #2E251C; box-shadow: 0 3px 8px rgba(184,146,78,.14); }
 
     /* ===== Layout ===== */
     main { max-width: 1200px; margin: 0 auto; padding: 24px 20px 120px; }
@@ -169,7 +235,7 @@
     .section-title { margin: 0 0 12px; font-size: 16px; font-weight: 700; color: var(--ink-2); }
     .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 20px; }
     .card {
-      background: var(--surface); border-radius: var(--radius-lg); padding: 22px;
+      background: var(--surface); border-radius: 20px; padding: 22px;
       border: 1px solid var(--border); box-shadow: var(--shadow-sm);
     }
     .card h3 { margin: 0 0 14px; font-size: 16px; font-weight: 700; }
@@ -178,7 +244,7 @@
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
     .stat {
       background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: var(--radius-md); padding: 16px; text-align: center;
+      border-radius: 14px; padding: 16px; text-align: center;
     }
     .stat .num { font-size: 22px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
     .stat .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; font-weight: 600; }
@@ -205,11 +271,11 @@
     .empty { color: var(--muted); text-align: center; padding: 24px 0; margin: 0; }
 
     .badge { font-size: 12px; font-weight: 700; padding: 4px 11px; border-radius: 999px; white-space: nowrap; display: inline-block; }
-    .done  { background: var(--income-soft); color: #2F5E44; }
-    .doing { background: var(--info-soft); color: #3D5680; }
-    .todo  { background: #F1EEE8; color: var(--ink-2); }
-    .alert { background: var(--expense-soft); color: #7E3B34; }
-    .warn  { background: var(--gold-soft); color: #6E5528; }
+    .done  { background: var(--income-soft); color: var(--income); }
+    .doing { background: var(--info-soft); color: var(--info); }
+    .todo  { background: var(--surface-2); color: var(--ink-2); }
+    .alert { background: var(--expense-soft); color: var(--expense); }
+    .warn  { background: var(--gold-soft); color: var(--gold-deep); }
 
     .chart-box { position: relative; height: 260px; }
 
@@ -219,16 +285,16 @@
       width: 60px; height: 60px; border-radius: 50%; border: none;
       background: linear-gradient(135deg, var(--gold), var(--orange));
       box-shadow: var(--shadow-fab);
-      display: inline-flex; align-items: center; justify-content: center; color: var(--ink);
+      display: inline-flex; align-items: center; justify-content: center; color: #2E251C;
     }
-    .nono-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(184,146,78,.28); }
+    .nono-fab:hover { transform: translateY(-2px); }
     .nono-fab svg { width: 26px; height: 26px; }
-    .nono-fab.open { background: #3A3026; color: #F5EEDF; }
+    .nono-fab.open { background: var(--topbar); color: var(--topbar-ink); }
 
     .nono-panel {
       position: fixed; left: 20px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 15;
       width: min(380px, calc(100vw - 40px)); height: min(520px, calc(100vh - 140px));
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
       box-shadow: var(--shadow-md);
       display: flex; flex-direction: column; overflow: hidden;
       overscroll-behavior: contain;
@@ -240,10 +306,10 @@
     }
     .nono-head .title { font-weight: 800; font-size: 16px; }
     .nono-close {
-      background: rgba(255,255,255,.7); border: none; border-radius: 10px; width: 32px; height: 32px;
+      background: var(--surface); border: none; border-radius: 10px; width: 32px; height: 32px;
       display: inline-flex; align-items: center; justify-content: center; color: var(--ink-2); font-size: 18px; line-height: 1;
     }
-    .nono-close:hover { background: #fff; }
+    .nono-close:hover { background: var(--surface-2); }
 
     .chat-log {
       flex: 1; overflow-y: auto; padding: 14px;
@@ -252,8 +318,8 @@
     .bubble {
       max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: 15px; white-space: pre-wrap; word-break: break-word;
     }
-    .bubble.you { align-self: flex-end; background: linear-gradient(135deg, var(--gold), var(--orange)); color: var(--ink); border-bottom-inline-end-radius: 6px; }
-    .bubble.bot { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); border-bottom-inline-start-radius: 6px; }
+    .bubble.you { align-self: flex-end; background: linear-gradient(135deg, var(--gold), var(--orange)); color: #2E251C; border-bottom-inline-end-radius: 6px; }
+    .bubble.bot { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border); color: var(--ink); border-bottom-inline-start-radius: 6px; }
     .bubble.pending { opacity: .6; }
     .chat-form { position: relative; display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
     .chat-form input { margin-top: 0; }
@@ -261,11 +327,11 @@
 
     /* ===== Modal ===== */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(46,37,28,.35); backdrop-filter: blur(3px);
+      position: fixed; inset: 0; background: var(--backdrop); backdrop-filter: blur(3px);
       display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 20;
     }
     .modal {
-      background: var(--surface); border-radius: var(--radius-lg); padding: 26px;
+      background: var(--surface); border-radius: 20px; padding: 26px;
       width: 100%; max-width: 440px; box-shadow: var(--shadow-md);
       max-height: calc(100vh - 40px); overflow-y: auto; overscroll-behavior: contain;
     }
@@ -316,6 +382,7 @@
         <span data-i18n="appTitle"></span>
       </h1>
       <div class="top-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="theme"></button>
         <button class="btn-ghost lang-toggle" data-action="toggleLang"></button>
         <button class="btn-ghost" data-action="logout" data-i18n="logout"></button>
       </div>
@@ -376,6 +443,40 @@
     // ===== Icons (SVG, decorative, no emoji) =====
     const ICON_EDIT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`;
     const ICON_DEL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`;
+    const ICON_SUN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
+    const ICON_MOON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>`;
+
+    // ===== Theme (Morning / Night) =====
+    const THEME_KEY = "dashboard-theme";
+    function currentTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "light" || saved === "dark") return saved;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    function applyTheme(theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+      const btn = document.getElementById("themeToggle");
+      // Show the icon for the mode you will switch TO
+      btn.innerHTML = theme === "dark" ? ICON_SUN : ICON_MOON;
+      btn.setAttribute("aria-label", theme === "dark"
+        ? (lang === "ar" ? "الوضع النهاري" : "Morning mode")
+        : (lang === "ar" ? "الوضع الليلي" : "Night mode"));
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", theme === "dark" ? "#17130F" : "#F7F3EC");
+      if (chart) renderChartColors();
+    }
+    function toggleTheme() {
+      const next = currentTheme() === "dark" ? "light" : "dark";
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    }
+    function renderChartColors() {
+      const grid = getComputedStyle(document.documentElement).getPropertyValue("--chart-grid").trim();
+      const muted = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+      chart.options.scales.x.ticks.color = muted;
+      chart.options.scales.y.ticks.color = muted;
+      chart.options.scales.y.grid.color = grid;
+      chart.update("none");
+    }
 
     // ===== Translations =====
     const T = {
@@ -515,6 +616,7 @@
       document.getElementById("chatTitle").textContent = t("nonoTitle");
       document.getElementById("nonoFab").setAttribute("aria-label", t("nonoOpen"));
       document.getElementById("nonoClose").setAttribute("aria-label", t("close"));
+      applyTheme(currentTheme());
     }
 
     // ===== Data =====
@@ -605,6 +707,9 @@
         </div>`;
 
       if (chart) chart.destroy();
+      const css = getComputedStyle(document.documentElement);
+      const gridColor = css.getPropertyValue("--chart-grid").trim();
+      const mutedColor = css.getPropertyValue("--muted").trim();
       chart = new Chart(document.getElementById("expenseChart"), {
         type: "bar",
         data: {
@@ -628,8 +733,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { display: false }, ticks: { color: "#8E8072" } },
-            y: { grid: { color: "#E9E1D3" }, ticks: { color: "#8E8072" }, beginAtZero: true },
+            x: { grid: { display: false }, ticks: { color: mutedColor } },
+            y: { grid: { color: gridColor }, ticks: { color: mutedColor }, beginAtZero: true },
           },
         },
       });
@@ -878,9 +983,15 @@
       else if (!document.getElementById("nonoPanel").hidden) toggleNono(false);
     });
 
+    document.getElementById("themeToggle").addEventListener("click", toggleTheme);
     document.getElementById("nonoFab").addEventListener("click", () => toggleNono());
     document.getElementById("nonoClose").addEventListener("click", () => toggleNono(false));
     document.getElementById("chatForm").addEventListener("submit", sendToNono);
+
+    // Follow device changes only when the user has not picked a theme
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+      if (!localStorage.getItem(THEME_KEY)) applyTheme(currentTheme());
+    });
 
     // Restore the tab from the URL hash, if any
     const initialHash = location.hash.replace("#", "");
